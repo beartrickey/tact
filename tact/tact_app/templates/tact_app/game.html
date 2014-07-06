@@ -1,0 +1,747 @@
+<html>
+
+<head>
+
+	<title>Daily Ascii Tactics</title>
+
+    <meta name="viewport" content="width=device-width; initial-scale=2.0; maximum-scale=2.0; user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
+
+
+    <!--<script src="jquery-1.11.1.min.js"></script>-->
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>-->
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<!--<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>-->
+
+
+    <!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css">-->
+    {% load staticfiles %}
+    {#    <img src="{% static "my_app/myexample.jpg" %}" alt="My image"/>#}
+
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+
+
+    <!-- Load Components -->
+{#    <script src="components/bottle.js"></script>#}
+{#    <script src="components/weapons.js"></script>#}
+{#    <script src="components/life.js"></script>#}
+{#    <script src="components/treasure.js"></script>#}
+{#    <script src="components/hurtPlayer.js"></script>#}
+{#    <script src="components/movement.js"></script>#}
+{#    <script src="components/potions.js"></script>#}
+{##}
+{#    <script src="dat.js"></script>#}
+
+
+	<style>
+
+        .center
+        {
+            width: 100%;
+            text-align: center;
+        }
+
+        .menu_button
+        {
+            background-color: #555;
+        }
+
+		body
+		{
+			-webkit-touch-callout: none;
+		    -webkit-user-select: none;
+		    -khtml-user-select: none;
+		    -moz-user-select: none;
+		    -ms-user-select: none;
+		    user-select: none;
+		    font-family:courier;
+		}
+
+	</style>
+
+</head>
+
+
+<body id="body" style="background-color:#888">
+
+        logged in as {{ user.username }}
+
+		<div align="center" >
+
+            <table>
+
+                <tr>
+
+                    <td id="canvas" style="background-color:#000"></td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td>
+                        <table id="menu" style="background-color:#888;color:#fff" width="100%">
+                            <tr><td><button style="color:black" onclick="test()">Enter Battle</button></td></tr>
+                        </table>
+                    </td>
+
+                </tr>
+
+            </table>
+
+		</div>
+
+
+</body>
+
+<script type="text/javascript">
+
+    function test()
+    {
+
+        $.ajax(
+        {
+
+            type: 'GET',
+            dataType: 'json',
+            url: "{% url 'get_battle_dictionary' %}",
+            data: { battle_id: {{ battle_id }}},
+
+            beforeSend:function()
+            {
+
+                // this is where we append a loading image
+
+            },
+
+            success:function(_response)
+            {
+
+                // successful request; do something with the data
+
+                battleDictionary = _response;
+                console.log(battleDictionary);
+
+                //parse characters
+                nodeList = JSON.parse( battleDictionary.node_list );
+
+                //set active character
+                activeDroid = battleDictionary.active_character;
+                setActiveDroid();
+
+                //redraw the canvas
+                drawCanvas();
+
+                startRootMode();
+
+
+            },
+
+            error:function(xhr, ajaxOptions, thrownError)
+            {
+
+                // failed request; give feedback to user
+{#                $('#searching_spinner_center').hide();#}
+{#                $('#sync_modal_error').show();#}
+{#                $('#sync_modal_error').html('<p class="error"><strong>Oops!</strong> Try that again in a few moments.</p>');#}
+
+            }
+
+        });
+
+    };
+
+//BATTLE INFO
+var battleDictionary = null;
+var nodeList = new Array();
+var activeDroid = null;
+
+
+////MODES
+var MODE_ROOT = 0;
+var MODE_ACTIVE_NODE = 1;
+var MODE_ACTIVE_NODE_MOVE = 2;
+var MODE_SCAN = 3;
+
+var mode = MODE_ROOT;
+
+//TERRAIN
+var TERRAIN_TYPE_PATH = 0;
+var TERRAIN_TYPE_WALL = 1;
+var TERRAIN_TYPE_WATER = 2;
+
+var TERRAIN_COLORS = ['#839e4f', '#e9f3d6', '#496fa3'];
+
+//NODE INFORMATION
+var FACING_ARRAY = ['<', '^', '>', 'v'];
+var SCANNED_CHARACTER_COLOR = "#F00";
+var ACTIVE_CHARACTER_COLOR = "#00F";
+
+////CANVAS AND BLOCKS
+var NUM_COLUMNS = 16;
+var NUM_ROWS = 9;
+var TOTAL_BLOCKS = NUM_COLUMNS * NUM_ROWS;
+var blockArray = new Array();
+var selectedBlock = null;
+
+
+function drawCanvas()
+{
+
+    blockArray = new Array();
+
+    var splitData = battleDictionary.terrain_map.split("|");
+
+    var currentColumn = -1;
+    var currentRow = 0;
+
+    $("#canvas").empty();
+
+    //terrain pass
+    for( var i = 0; i < splitData.length; i++ )
+    {
+
+        //advance grid
+        currentColumn++;
+        if( currentColumn == NUM_COLUMNS )
+        {
+            currentColumn = 0;
+            currentRow++;
+
+            $("#canvas").append( "<br>" );
+        }
+
+        var block = new Block( currentColumn, currentRow, parseInt(splitData[i]) );
+        block.updateTerrainType( block.terrainType );
+
+        blockArray.push( block );
+
+        $("#canvas").append( block.spanText );
+
+    }
+
+
+    //node pass
+    for( var b = 0; b < blockArray.length; b++ )
+    {
+
+        blockArray[b].resetBlock();
+
+    }
+
+
+    //event listeners
+    document.ontouchstart = function(e)
+    {
+        e.preventDefault();
+    };
+
+    document.ontouchmove = function(e)
+    {
+        e.preventDefault();
+    };
+
+    $(".block").mousemove( function( e )
+    {
+        //select
+        var block = getBlockWithId( $(this).attr("id") );
+
+        if( mode == MODE_SCAN )
+            block.selectBlock();
+    });
+
+    $('.block').on({ 'touchstart' : function(e)
+    {
+        var block = getBlockWithId( $(this).attr("id") );
+
+        if( mode == MODE_SCAN )
+            block.selectBlock();
+    }});
+
+    $('.block').on({ 'mousedown' : function(e)
+    {
+        var block = getBlockWithId( $(this).attr("id") );
+
+        if( mode == MODE_SCAN )
+            block.selectBlock();
+    }});
+
+};
+
+
+
+function Block( _col, _row, _terrainType )
+{
+
+    this.bgColor = TERRAIN_COLORS[_terrainType];
+    this.fontColor = "";
+    this.character = "&nbsp;";
+    this.row = _row;
+    this.col = _col;
+    this.terrainType = _terrainType;
+
+    //span
+    this.idText = "block_" + this.col + "_" + this.row;
+    this.jqIdText = "#" + this.idText;
+    this.spanText = "<span class='block' id='" + this.idText + "' style='background-color:" + this.bgColor + ";color:" + this.fontColor + "'>&nbsp;</span>";
+
+    //set reset block
+    this.resetBlock = function()
+    {
+
+        //if selected, keep bg color the same
+        if( selectedBlock == this )
+        {
+            this.selectBlock();
+            return;
+        }
+
+
+        //if contains the active character, update for that
+        if( activeDroid.fields['column'] == this.col && activeDroid.fields['row'] == this.row )
+        {
+            this.tempUpdateBlock( activeDroid.fields['font_color'], ACTIVE_CHARACTER_COLOR, FACING_ARRAY[activeDroid.fields['facing']] );
+            return;
+        }
+
+
+        //if something is still here, change to that
+        var thingsOnThisBlock = getMapNodesOnBlock( this );
+
+        if( thingsOnThisBlock.length > 0 )
+        {
+
+            if( thingsOnThisBlock.length == 1 )//normal instance
+            {
+                var firstThing = thingsOnThisBlock[0];
+                this.tempUpdateBlock( firstThing.fields['font_color'], firstThing.fields['background_color'], FACING_ARRAY[firstThing.fields['facing']] );
+            }
+            else if( thingsOnThisBlock.length > 1 )
+            {
+
+                this.tempUpdateBlock( "#000", this.bgColor, "?" );
+            }
+
+            return;
+
+        }
+
+
+        //update to normal block colors if nothing on it
+        $(this.jqIdText).css( "color", this.fontColor );
+        $(this.jqIdText).css( "background-color", this.bgColor );
+        $(this.jqIdText).html( this.character );
+
+    };
+
+
+    this.tempUpdateBlock = function( _fontColor, _bgColor, _character )
+    {
+
+        if( _fontColor != "" )
+            $(this.jqIdText).css( "color", _fontColor );
+        else
+            $(this.jqIdText).css( "color", this.fontColor );
+
+        if( _bgColor != "" )
+            $(this.jqIdText).css( "background-color", _bgColor );
+        else
+            $(this.jqIdText).css( "background-color", this.bgColor );
+
+        $(this.jqIdText).html( _character );
+
+
+        //if selected, keep bg color the same
+        if( selectedBlock == this )
+        {
+            this.selectBlock();
+        }
+
+    };
+
+
+    this.updateTerrainType = function( _terrainType )
+    {
+
+        this.terrainType = _terrainType;
+
+        if( this.terrainType == TERRAIN_TYPE_PATH )
+        {
+
+            this.fontColor = "#888";
+            this.bgColor = "#839e4f";
+            this.character = "&nbsp;";
+
+        }
+        else if( this.terrainType == TERRAIN_TYPE_WALL )
+        {
+
+            this.fontColor = "#000";
+            this.bgColor = "#e9f3d6";
+            this.character = "&nbsp;";
+
+        }
+        else if( this.terrainType == TERRAIN_TYPE_WATER )
+        {
+
+            this.fontColor = "#000";
+            this.bgColor = "#496fa3";
+            this.character = "&nbsp;";
+
+        }
+
+    };
+
+
+    //select
+    this.selectBlock = function()
+    {
+
+        if( selectedBlock != null )
+            selectedBlock.deselectBlock();
+
+        selectedBlock = this;
+
+
+        //special select color
+        $(this.jqIdText).css("background-color", SCANNED_CHARACTER_COLOR);
+
+
+        //update menu based on mode
+        if( mode == MODE_SCAN )
+            startScanMode( this );
+
+    };
+
+
+
+    //deselect
+    this.deselectBlock = function()
+    {
+
+        selectedBlock = null;
+
+        //reset to normal color
+        this.resetBlock();
+
+    };
+
+};
+
+
+function getMapNodesOnBlock( _block )
+{
+
+    var returnList = new Array();
+
+    if( _block == null )
+        return returnList;
+
+    for( i in nodeList )
+    {
+
+        var character = nodeList[i];
+
+        if( character.fields['column'] == _block.col && character.fields['row'] == _block.row )
+        {
+
+            returnList.push( character );
+
+        }
+
+    }
+
+    return returnList;
+
+};
+
+
+
+function getBlockWithId( _id )
+{
+
+    var splitId = _id.split("_");
+
+    var col = splitId[1];
+    var row = splitId[2];
+
+    var blockIndex = (parseInt(row) * NUM_COLUMNS) + parseInt(col);
+
+    return blockArray[blockIndex];
+
+};
+
+
+////////////////MODES
+
+
+
+function startRootMode()
+{
+
+    mode = MODE_ROOT;
+
+    //remove selected block
+    if( selectedBlock != null )
+    {
+        var lastSelectedBlock = selectedBlock;
+        selectedBlock = null;
+        lastSelectedBlock.resetBlock();
+    }
+
+
+    //update label
+    infoLabelText = "";
+
+    infoLabelText += "<tr><td><br></td></tr>";
+    infoLabelText += "<tr><td><br></td></tr>";
+    infoLabelText += "<tr><td><br></td></tr>";
+    infoLabelText += "<tr><td>"  + makeButtonChain( [["comm", "startActiveDroidMode"], ["scan", "startScanMode"], ["hist", "bla"]] ) + "</td></tr>";
+
+    document.getElementById("menu").innerHTML = infoLabelText;
+
+
+{#    //reset scan block#}
+{#    if( selectedBlock != null)#}
+{#    {#}
+{##}
+{#        var block = selectedBlock;#}
+{#        selectedBlock = null;#}
+{#        block.resetBlock();#}
+{##}
+{#    }#}
+{##}
+{##}
+{#    //update droid block#}
+{#    activeDroid.node.block.tempUpdateBlock( activeDroid.node.fontColor, ACTIVE_DROID_COLOR, activeDroid.node.facingArray[activeDroid.node.facing] );#}
+
+};
+
+
+function startActiveDroidMode()
+{
+
+    mode = MODE_ACTIVE_NODE;
+
+    infoLabelText = "";
+
+    infoLabelText += "<tr><td>"+ activeDroid.fields['name'] + "</td></tr>";
+    infoLabelText += "<tr><td>HP: " + pad(activeDroid.fields['hit_points'], 3) + " / " + pad(activeDroid.fields['total_hit_points'], 3) + "</td></tr>";
+    infoLabelText += "<tr><td>AP: " + pad(activeDroid.fields['action_points'], 3) + " / " + pad(activeDroid.fields['total_action_points'], 3) + "</td></tr>";
+    infoLabelText += "<tr><td>"  + makeButtonChain( [["<<<<", "startRootMode"],  ["move", "startMoveMode"], ["end ", "endTurn"]] ) + "</td></tr>";
+
+    document.getElementById("menu").innerHTML = infoLabelText;
+
+};
+
+
+
+function startMoveMode()
+{
+
+    mode = MODE_ACTIVE_NODE_MOVE;
+
+    infoLabelText = "";
+
+    infoLabelText += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp|" + makeButton( "&nbspup&nbsp", "moveUp" ) + "|AP:" + pad(activeDroid.fields['action_points'], 2) + "</td></tr>";
+    infoLabelText += "<tr><td>|" + makeButton( "left", "moveLeft" ) + "|&nbsp&nbsp&nbsp&nbsp|"  + makeButton( "rigt", "moveRight" ) + "|</td></tr>";
+    infoLabelText += "<tr><td><div align='center'>|" + makeButton( "down", "moveDown" ) + "|</div></td></tr>";
+    infoLabelText += "<tr><td>|"  + makeButton( "<<<<", "startActiveDroidMode" ) + "|</td></tr>";
+
+    document.getElementById("menu").innerHTML = infoLabelText;
+
+};
+
+
+
+function startScanMode()
+{
+
+    mode = MODE_SCAN;
+
+    var infoLabelText = "";
+
+    var blockContents = getMapNodesOnBlock( selectedBlock );
+
+    if( blockContents.length < 1 || selectedBlock == null )
+    {
+        infoLabelText += "<tr><td>scanning</td></tr>";
+        infoLabelText += "<tr><td>&nbsp</td></tr>";
+        infoLabelText += "<tr><td>&nbsp</td></tr>";
+    }
+    else
+    {
+
+        var thing = blockContents[0];
+
+        //name
+        infoLabelText += "<tr><td>"+ thing.fields['name'] + "</td></tr>";
+        infoLabelText += "<tr><td>HP: " + pad(thing.fields['hit_points'], 3) + " / " + pad(thing.fields['total_hit_points'], 3) + "</td></tr>";
+        infoLabelText += "<tr><td>AP: " + pad(thing.fields['action_points'], 3) + " / " + pad(thing.fields['total_action_points'], 3) + "</td></tr>";
+
+    }
+
+    infoLabelText += "<tr><td>|"  + makeButton( "<<<<", "startRootMode" ) + "|</td></tr>";
+
+    document.getElementById("menu").innerHTML = infoLabelText;
+
+};
+
+
+
+/////////////////////////ACTIONS
+
+
+
+function endTurn()
+{
+    performAction( JSON.stringify( {end_turn: 1} ) );
+};
+
+
+
+function moveLeft()
+{
+    performAction( JSON.stringify( {move: 0} ) );
+};
+
+
+
+function moveUp()
+{
+    performAction( JSON.stringify( {move: 1} ) );
+};
+
+
+
+function moveRight()
+{
+    performAction( JSON.stringify( {move: 2} ) );
+};
+
+
+
+function moveDown()
+{
+    performAction( JSON.stringify( {move: 3} ) );
+};
+
+
+
+function performAction( _actionDictionary )
+{
+
+    $.ajax(
+    {
+
+        type: 'GET',
+        dataType: 'json',
+        url: "{% url 'perform_action' %}",
+        data: {
+            battle_id: {{ battle_id }},
+            action_dictionary: _actionDictionary
+        },
+
+        success:function(_response)
+        {
+
+            battleDictionary = _response;
+            console.log(_response);
+
+            nodeList = JSON.parse( battleDictionary.node_list );
+            setActiveDroid( battleDictionary.active_character );
+
+            //redraw the canvas
+            drawCanvas()
+
+            //update menu
+            if( mode == MODE_ACTIVE_NODE_MOVE )
+                startMoveMode();
+            if( mode == MODE_ACTIVE_NODE )
+                startActiveDroidMode();
+            if( mode == MODE_ROOT )
+                startRootMode();
+
+        }
+
+    });
+
+}
+
+
+
+function setActiveDroid( _droid )
+{
+
+    activeDroid = _droid;
+
+    for( node in nodeList )
+    {
+
+        if( nodeList[node].pk == battleDictionary.active_character )
+        {
+
+            activeDroid = nodeList[node];
+            return;
+
+        }
+
+    }
+
+};
+
+
+function makeButtonChain( _buttonArray )
+{
+
+    var buttonChainString = "|";
+
+    for( button in _buttonArray )
+    {
+
+        var printText = _buttonArray[button][0];
+        var functionText = _buttonArray[button][1];
+
+        buttonChainString += makeButton( printText, functionText );
+
+        buttonChainString += "|";
+
+    }
+
+    return buttonChainString;
+
+};
+
+
+
+function makeButton( _text, _functionName )
+{
+
+    var buttonText = "<a class='menu_button' ontouchstart='" + _functionName + "()' onclick='" + _functionName + "()'>" + _text + "</a>";
+
+    return buttonText;
+
+};
+
+
+
+function pad( _number, _paddingAmount )
+{
+
+    return ( "0000000000" + _number ).slice( -_paddingAmount );
+
+}
+
+</script>
+
+</html>
