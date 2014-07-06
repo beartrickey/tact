@@ -46,7 +46,7 @@ class TerrainMap(models.Model):
         at the bottom right. Assumes a grid of 16x9
     """
 
-    map_data = models.CharField(max_length='256')
+    map_data = models.CharField(max_length='512')
 
 
 ###########################################

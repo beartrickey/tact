@@ -57,9 +57,13 @@ WSGI_APPLICATION = 'tact.wsgi.application'
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2", # Add "postgresql_psycopg2", "mysql", "sqlite3" or "oracle"
+        "NAME": "tact",                                     # Or path to database file if using sqlite3.
+        "USER": "tact",                                     # Not used with sqlite3.
+        "PASSWORD": "tact",                                 # Not used with sqlite3.
+        "HOST": "",                                         # Set to empty string for localhost. Not used with sqlite3.
+        "PORT": "5432",                                     # Set to empty string for default. Not used with sqlite3.
     }
 }
 
