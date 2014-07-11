@@ -1,0 +1,19 @@
+[
+    {
+        "model": "User",
+        "pk": 1,
+        "fields": {
+            "first_name": "bear",
+            "last_name": "trickey",
+            "email": "bear@winningblimp.com"
+        }
+
+    },
+    {
+        "model": "tact_app.Player",
+        "pk": 1,
+        "fields": {
+            "user": "1"
+        }
+    }
+]

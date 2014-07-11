@@ -1,0 +1,26 @@
+Players can only control their own characters
+
+Weapons / Item implementation
+
+Character creation screen
+
+Room/Matching system
+
+Global variables in database
+
+Learn fixtures
+
+Game start
+    -initial character positioning
+        -player chosen or random?
+
+Game End
+    -final result screen
+    -what is the reward for winning?
+    -what is the reward for simply playing?
+        -leveling up system?
+            -give one point to one character?
+
+Daily aspect
+    -log in everyday for bonuses!
+    -different days of the week have different character bonuses/effects
