@@ -718,7 +718,9 @@ function makeButton( _text, _functionName, _args )
     if( _args == null )
         _args = ""
 
-    var buttonText = "<a class='menu_button' ontouchstart='" + _functionName + "()' onclick='" + _functionName + "(" + _args + ")'>" + _text + "</a>";
+    var functionPlusArgs = _functionName + "(" + _args + ")"
+
+    var buttonText = "<a class='menu_button' ontouchstart='" + functionPlusArgs + "' onclick='" + functionPlusArgs + "'>" + _text + "</a>";
 
     return buttonText;
 
