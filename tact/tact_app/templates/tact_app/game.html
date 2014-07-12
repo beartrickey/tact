@@ -551,9 +551,9 @@ function startMoveMode()
 
     infoLabelText = "";
 
-    infoLabelText += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp|" + makeButton( "&nbspup&nbsp", "moveUp" ) + "|AP:" + pad(activeDroid.fields['action_points'], 2) + "</td></tr>";
-    infoLabelText += "<tr><td>|" + makeButton( "left", "moveLeft" ) + "|&nbsp&nbsp&nbsp&nbsp|"  + makeButton( "rigt", "moveRight" ) + "|</td></tr>";
-    infoLabelText += "<tr><td><div align='center'>|" + makeButton( "down", "moveDown" ) + "|</div></td></tr>";
+    infoLabelText += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp|" + makeButton( "&nbspup&nbsp", "move", 1 ) + "|AP:" + pad(activeDroid.fields['action_points'], 2) + "</td></tr>";
+    infoLabelText += "<tr><td>|" + makeButton( "left", "move", 0 ) + "|&nbsp&nbsp&nbsp&nbsp|"  + makeButton( "rigt", "move", 2 ) + "|</td></tr>";
+    infoLabelText += "<tr><td><div align='center'>|" + makeButton( "down", "move", 3 ) + "|</div></td></tr>";
     infoLabelText += "<tr><td>|"  + makeButton( "<<<<", "startActiveDroidMode" ) + "|</td></tr>";
 
     document.getElementById("menu").innerHTML = infoLabelText;
@@ -606,34 +606,24 @@ function endTurn()
     performAction( JSON.stringify( {end_turn: 1} ) );
 };
 
-
-
-function moveLeft()
+function move( _facing )
 {
-    performAction( JSON.stringify( {move: 0} ) );
+    performAction( JSON.stringify( {move: _facing} ) );
 };
 
-
-
-function moveUp()
+function use_item( _facing )
 {
-    performAction( JSON.stringify( {move: 1} ) );
+
+    performAction(
+        JSON.stringify(
+            {
+                use_item_facing: _facing,
+                use_item: _item
+            }
+        )
+    );
+
 };
-
-
-
-function moveRight()
-{
-    performAction( JSON.stringify( {move: 2} ) );
-};
-
-
-
-function moveDown()
-{
-    performAction( JSON.stringify( {move: 3} ) );
-};
-
 
 
 function performAction( _actionDictionary )
@@ -722,10 +712,13 @@ function makeButtonChain( _buttonArray )
 
 
 
-function makeButton( _text, _functionName )
+function makeButton( _text, _functionName, _args )
 {
 
-    var buttonText = "<a class='menu_button' ontouchstart='" + _functionName + "()' onclick='" + _functionName + "()'>" + _text + "</a>";
+    if( _args == null )
+        _args = ""
+
+    var buttonText = "<a class='menu_button' ontouchstart='" + _functionName + "()' onclick='" + _functionName + "(" + _args + ")'>" + _text + "</a>";
 
     return buttonText;
 

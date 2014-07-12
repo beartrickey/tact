@@ -25,6 +25,12 @@ class Battle(models.Model):
     def return_battle_history(self):
         pass
 
+    def __unicode__(self):
+        return u'{0}'.format(self.start_date_time)
+
+    def __str__(self):
+        return str(self.__unicode__())
+
 
 class GameEvent(models.Model):
     """
@@ -63,6 +69,12 @@ class Player(models.Model):
 
     user = models.ForeignKey(User)
 
+    def __unicode__(self):
+        return u'{0}, {1}'.format(self.user.last_name, self.user.first_name)
+
+    def __str__(self):
+        return str(self.__unicode__())
+
 
 class MapNodeClass(models.Model):
     """
@@ -88,6 +100,12 @@ class MapNodeClass(models.Model):
 
     class Meta:
         abstract = True
+
+    def __unicode__(self):
+        return u'{0}'.format(self.name)
+
+    def __str__(self):
+        return str(self.__unicode__())
 
 
 class Character(MapNodeClass):
@@ -126,15 +144,25 @@ class Character(MapNodeClass):
 
 
 class Item(MapNodeClass):
+    """
+    A specific item a character can hold.
+    """
 
     character = models.ForeignKey('Character', related_name='items')
+
+    attributes = models.ManyToManyField('ItemAttribute', related_name='items')
 
 
 class ItemAttribute(models.Model):
     """
-        Links an Item to a set of python logic.
+    The attributes of an item.
+    For example 'does damage', or 'fiery'
     """
 
-    component_name = models.CharField(max_length=32)
+    name = models.CharField(max_length=16)
 
-    items = models.ManyToManyField('Item', related_name='attributes')
+    def __unicode__(self):
+        return u'{0}'.format(self.name)
+
+    def __str__(self):
+        return str(self.__unicode__())

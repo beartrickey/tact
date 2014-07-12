@@ -1,4 +1,5 @@
 import json
+from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -8,10 +9,12 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.serializers import serialize
 
 
-from battle_machine import make_new_battle, choose_active_character, make_battle_dictionary, move_node, end_active_characters_turn
+from battle_machine import make_new_battle, choose_active_character, make_battle_dictionary, move_node,\
+    end_active_characters_turn, use_item
 from models import Battle, TerrainMap, Character
 
 
+@login_required
 def battle(_request):
 
     try:
@@ -29,7 +32,7 @@ def battle(_request):
     )
 
 
-@csrf_exempt
+@login_required
 def get_battle_dictionary(_request):
 
     battle_id = _request.GET.get('battle_id')
@@ -44,7 +47,7 @@ def get_battle_dictionary(_request):
     return http_response
 
 
-@csrf_exempt
+@login_required
 def perform_action(_request):
 
     # battle
@@ -55,14 +58,25 @@ def perform_action(_request):
     action_dictionary = json.loads(_request.GET.get('action_dictionary'))
 
     #process action
-    try:
-        if action_dictionary['move'] != None:
-            move_node(battle.active_character, action_dictionary['move'], battle.terrain_map)
-    except KeyError:
-        if action_dictionary['end_turn'] != None:
-            end_active_characters_turn(battle)
-    except:
-        pass
+    if action_dictionary.get('move') is not None:
+        move_node(
+            _node=battle.active_character,
+            _facing=action_dictionary.get('move'),
+            _battle=battle,
+        )
+
+    elif action_dictionary.get('end_turn') is not None:
+        end_active_characters_turn(
+            _battle=battle,
+        )
+
+    elif action_dictionary.get('use_item') is not None:
+        use_item(
+            _node=battle.active_character,
+            _item=action_dictionary.get('use_item'),
+            _facing=action_dictionary.get('use_item_facing'),
+            _terrain_map=battle.terrain_map,
+        )
 
     battle, battle_dictionary = make_battle_dictionary(battle_id)
 

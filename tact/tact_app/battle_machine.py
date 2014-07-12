@@ -191,11 +191,11 @@ def make_battle_dictionary(_battle_id):
     return battle, battle_dictionary
 
 
-def move_node(_node, _facing, _terrain_map):
+def move_node(_node, _facing, _battle):
 
     current_col = _node.column
     current_row = _node.row
-    map_list = _terrain_map.map_data.split('|')
+    map_list = _battle.terrain_map.map_data.split('|')
 
     if _facing == 0:
         current_col -= 1
@@ -226,6 +226,16 @@ def move_node(_node, _facing, _terrain_map):
         _node.save()
         return
 
+    #don't move if other character is there
+    if any(
+            _battle.characters.filter(
+                column=current_col,
+                row=current_row,
+            )
+    ):
+        _node.save()
+        return
+
     if next_block == TERRAIN_TYPE_PATH:
         # print 'cannot move to block at {0}, {1}'.format(current_col, current_row)
         _node.column = current_col
@@ -236,3 +246,6 @@ def move_node(_node, _facing, _terrain_map):
     _node.save()
 
     # print 'moved to block at {0}, {1}'.format(current_col, current_row)
+
+def use_item(_node, _facing, _terrain_map):
+    pass
