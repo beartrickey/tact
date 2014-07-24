@@ -31,18 +31,6 @@
     <script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
 
 
-    <!-- Load Components -->
-{#    <script src="components/bottle.js"></script>#}
-{#    <script src="components/weapons.js"></script>#}
-{#    <script src="components/life.js"></script>#}
-{#    <script src="components/treasure.js"></script>#}
-{#    <script src="components/hurtPlayer.js"></script>#}
-{#    <script src="components/movement.js"></script>#}
-{#    <script src="components/potions.js"></script>#}
-{##}
-{#    <script src="dat.js"></script>#}
-
-
 	<style>
 
         .center
@@ -135,7 +123,7 @@
 
                 //set active character
                 activeDroid = battleDictionary.active_character;
-                setActiveDroid();
+                setActiveCharacter();
 
                 //redraw the canvas
                 drawCanvas();
@@ -163,6 +151,7 @@
 var battleDictionary = null;
 var nodeList = new Array();
 var activeDroid = null;
+var playerId = {{ user.id }};
 
 
 ////MODES
@@ -499,29 +488,19 @@ function startRootMode()
 
 
     //update label
-    infoLabelText = "";
+    var infoLabelText = "";
 
     infoLabelText += "<tr><td><br></td></tr>";
     infoLabelText += "<tr><td><br></td></tr>";
     infoLabelText += "<tr><td><br></td></tr>";
-    infoLabelText += "<tr><td>"  + makeButtonChain( [["comm", "startActiveDroidMode"], ["scan", "startScanMode"], ["hist", "bla"]] ) + "</td></tr>";
+
+    //don't show comm button if it isn't this player's turn
+    if( activeDroid.fields['player'] == playerId )
+        infoLabelText += "<tr><td>"  + makeButtonChain( [["comm", "startActiveDroidMode"], ["scan", "startScanMode"], ["hist", "bla"]] ) + "</td></tr>";
+    else
+        infoLabelText += "<tr><td>"  + makeButtonChain( [["scan", "startScanMode"], ["hist", "bla"]] ) + "</td></tr>";
 
     document.getElementById("menu").innerHTML = infoLabelText;
-
-
-{#    //reset scan block#}
-{#    if( selectedBlock != null)#}
-{#    {#}
-{##}
-{#        var block = selectedBlock;#}
-{#        selectedBlock = null;#}
-{#        block.resetBlock();#}
-{##}
-{#    }#}
-{##}
-{##}
-{#    //update droid block#}
-{#    activeDroid.node.block.tempUpdateBlock( activeDroid.node.fontColor, ACTIVE_DROID_COLOR, activeDroid.node.facingArray[activeDroid.node.facing] );#}
 
 };
 
@@ -531,7 +510,7 @@ function startActiveDroidMode()
 
     mode = MODE_ACTIVE_NODE;
 
-    infoLabelText = "";
+    var infoLabelText = "";
 
     infoLabelText += "<tr><td>"+ activeDroid.fields['name'] + "</td></tr>";
     infoLabelText += "<tr><td>HP: " + pad(activeDroid.fields['hit_points'], 3) + " / " + pad(activeDroid.fields['total_hit_points'], 3) + "</td></tr>";
@@ -549,7 +528,7 @@ function startMoveMode()
 
     mode = MODE_ACTIVE_NODE_MOVE;
 
-    infoLabelText = "";
+    var infoLabelText = "";
 
     infoLabelText += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp|" + makeButton( "&nbspup&nbsp", "move", 1 ) + "|AP:" + pad(activeDroid.fields['action_points'], 2) + "</td></tr>";
     infoLabelText += "<tr><td>|" + makeButton( "left", "move", 0 ) + "|&nbsp&nbsp&nbsp&nbsp|"  + makeButton( "rigt", "move", 2 ) + "|</td></tr>";
@@ -640,35 +619,37 @@ function performAction( _actionDictionary )
             action_dictionary: _actionDictionary
         },
 
-        success:function(_response)
+        success:function( _response )
         {
 
             battleDictionary = _response;
-            console.log(_response);
+            console.log( _response );
 
             nodeList = JSON.parse( battleDictionary.node_list );
-            setActiveDroid( battleDictionary.active_character );
+            setActiveCharacter( battleDictionary.active_character );
+
 
             //redraw the canvas
             drawCanvas()
 
-            //update menu
-            if( mode == MODE_ACTIVE_NODE_MOVE )
-                startMoveMode();
-            if( mode == MODE_ACTIVE_NODE )
-                startActiveDroidMode();
-            if( mode == MODE_ROOT )
+
+            //go to root menu if not your turn anymore
+            if( activeDroid.fields['player'] != playerId )
                 startRootMode();
+            else if( mode == MODE_ACTIVE_NODE_MOVE )
+                startMoveMode();
+            else if( mode == MODE_ACTIVE_NODE )
+                startActiveDroidMode();
 
         }
 
     });
 
-}
+};
 
 
 
-function setActiveDroid( _droid )
+function setActiveCharacter( _droid )
 {
 
     activeDroid = _droid;

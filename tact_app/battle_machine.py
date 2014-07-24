@@ -6,7 +6,7 @@ from django.forms.models import model_to_dict
 from django.core.serializers import serialize
 
 #app imports
-from models import Battle, TerrainMap, Character
+from models import Battle, TerrainMap, Character, Player
 
 
 #blocks
@@ -36,7 +36,12 @@ def get_terrain_type(_column, _row, _battle_id):
 
 
 def make_random_character_for_player(_player):
-    pass
+
+    character = make_random_character()
+    character.player = _player
+    character.save()
+
+    return character
 
 
 def make_random_character():
@@ -73,11 +78,14 @@ def make_random_character():
 
 def make_new_battle(_character_list):
 
+    #players
+    player = Player.objects.get(id=1)
+
     #character list
     if _character_list is None:
         _character_list = []
         for i in range(6):
-            _character_list.append(make_random_character())
+            _character_list.append(make_random_character_for_player(player))
 
     #map data
     terrain_map_data = ""
@@ -118,7 +126,8 @@ def make_new_battle(_character_list):
 
         character.save()
 
-    choose_active_character(new_battle)
+    # make the first character active
+    new_battle.active_character = new_battle.characters.all()[0]
 
     new_battle.save()
 
@@ -127,7 +136,7 @@ def make_new_battle(_character_list):
 
 def end_active_characters_turn(_battle):
 
-    _battle.active_character.round += 1
+    _battle.active_character.round = _battle.current_round
 
     _battle.active_character.save()
 
@@ -138,25 +147,29 @@ def choose_active_character(_battle):
 
     print "choosing active character for round {0}".format(_battle.current_round)
 
-    characters = _battle.characters.all()
+    active_player = _battle.active_character.player
 
-    for character in characters:
+    # is there a character that this player controls that hasn't gone this round yet?
+    active_player_characters = Character.objects.filter(
+        battle=_battle,
+        player=active_player,
+        round=_battle.current_round - 1,
+    )
 
-        #skip if not enough action points or turn has already been taken this round
-        if character.action_points < character.total_action_points:
-            print "character has no action points: " + character.name
-            continue
-
-        if character.round == _battle.current_round:
-            print "character {0} has already gone this round".format(character.name)
-            continue
-
-        print "found active character: {0}".format(character.name)
-        _battle.active_character = character
-
+    if len(active_player_characters) > 0:
+        _battle.active_character = active_player_characters[0]
         _battle.save()
-
         return
+    else:
+        remaining_player_characters = Character.objects.filter(
+            battle=_battle,
+            round=_battle.current_round - 1,
+        )
+
+        if len(remaining_player_characters) > 0:
+            _battle.active_character = remaining_player_characters[0]
+            _battle.save()
+            return
 
     #if no character returned, increase round number, and replenish action points
     increment_current_round(_battle)
@@ -169,10 +182,10 @@ def increment_current_round(_battle):
     characters = _battle.characters.all()
 
     for character in characters:
-        character.round = _battle.current_round - 1  # ensure all character rounds are up to date
         character.offset_action_points(character.action_point_recovery_speed)
         character.save()
 
+    # TODO: Ensure same player doesn't go twice
     choose_active_character(_battle)
 
 

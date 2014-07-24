@@ -14,13 +14,26 @@ class Battle(models.Model):
         All of the settings for a single play session
     """
 
+    # ABSOLUTE = 0
+    # RELATIVE = 1
+    #
+    # TURN_METHOD_CHOICES = (
+    #     (ABSOLUTE, 'Absolute'),
+    #     (RELATIVE, 'Relative'),
+    # )
+
     start_date_time = models.DateTimeField(default=datetime.now, blank=True)
 
     current_round = models.IntegerField(default=1)
 
-    active_character = models.ForeignKey('Character', null=True, blank=True, related_name='active_character')
+    # active_character = models.ForeignKey('Character', null=True, blank=True, related_name='active_character')
 
     terrain_map = models.ForeignKey('TerrainMap')
+
+    # turn_method = models.IntegerField(choices=TURN_METHOD_CHOICES, default=0)  # required.
+
+    # required. Number of minutes a player has each round to take turns for all characters.
+    turn_duration = models.IntegerField(default=0)
 
     def return_battle_history(self):
         pass
@@ -67,7 +80,7 @@ class Player(models.Model):
         are fighting in different battles at the same time.
     """
 
-    user = models.ForeignKey(User)
+    user = models.OneToOneField(User, related_name='player')  # should this be a one-to-one?
 
     def __unicode__(self):
         return u'{0}, {1}'.format(self.user.last_name, self.user.first_name)
@@ -119,28 +132,28 @@ class Character(MapNodeClass):
 
     player = models.ForeignKey('Player', related_name='characters', null=True, blank=True)
 
-    hit_points = models.IntegerField(default=0)
-
-    total_hit_points = models.IntegerField(default=0)
-
-    action_points = models.IntegerField(default=0)
-
-    total_action_points = models.IntegerField(default=0)
-
-    action_point_recovery_speed = models.IntegerField(default=0)
+    strength = models.IntegerField(default=0)
+    # hit_points = models.IntegerField(default=0)
+    #
+    # total_hit_points = models.IntegerField(default=0)
+    #
+    # action_points = models.IntegerField(default=0)
+    #
+    # total_action_points = models.IntegerField(default=0)
+    #
+    # action_point_recovery_speed = models.IntegerField(default=0)
 
     round = models.IntegerField(default=0)
 
-    def offset_action_points(self, _amount):
-
-        self.action_points += _amount
-
-        #clamp
-        if self.action_points <= 0:
-            self.action_points = 0
-        if self.action_points >= self.total_action_points:
-            self.action_points = self.total_action_points
-
+    # def offset_action_points(self, _amount):
+    #
+    #     self.action_points += _amount
+    #
+    #     #clamp
+    #     if self.action_points <= 0:
+    #         self.action_points = 0
+    #     if self.action_points >= self.total_action_points:
+    #         self.action_points = self.total_action_points
 
 
 class Item(MapNodeClass):
@@ -161,8 +174,10 @@ class ItemAttribute(models.Model):
 
     name = models.CharField(max_length=16)
 
+    value = models.IntegerField(default=0)
+
     def __unicode__(self):
-        return u'{0}'.format(self.name)
+        return u'{0}, {1}'.format(self.name, self.value)
 
     def __str__(self):
         return str(self.__unicode__())

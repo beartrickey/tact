@@ -18,9 +18,12 @@ from models import Battle, TerrainMap, Character
 def battle(_request):
 
     try:
-        new_battle = Battle.objects.get(pk=1)
+        player = _request.user.player
+        new_battle = Battle.objects.filter(
+            characters__in=_request.user.player.characters.all()
+        ).distinct()[0]
         choose_active_character(new_battle)
-    except:
+    except IndexError:
         new_battle = make_new_battle(_character_list=None)
 
     return render(
