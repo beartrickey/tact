@@ -14,26 +14,17 @@ class Battle(models.Model):
         All of the settings for a single play session
     """
 
-    # ABSOLUTE = 0
-    # RELATIVE = 1
-    #
-    # TURN_METHOD_CHOICES = (
-    #     (ABSOLUTE, 'Absolute'),
-    #     (RELATIVE, 'Relative'),
-    # )
+    terrain_map = models.ForeignKey('TerrainMap')
 
     start_date_time = models.DateTimeField(default=datetime.now, blank=True)
 
-    current_round = models.IntegerField(default=1)
+    current_frame = models.IntegerField(default=1)
 
-    # active_character = models.ForeignKey('Character', null=True, blank=True, related_name='active_character')
-
-    terrain_map = models.ForeignKey('TerrainMap')
-
-    # turn_method = models.IntegerField(choices=TURN_METHOD_CHOICES, default=0)  # required.
+    frames_per_cycle = models.IntegerField(default=1)
 
     # required. Number of minutes a player has each round to take turns for all characters.
-    turn_duration = models.IntegerField(default=0)
+    # The deadline to decide moves is determined by this.
+    cycle_duration = models.IntegerField(default=0)
 
     def return_battle_history(self):
         pass
@@ -45,16 +36,29 @@ class Battle(models.Model):
         return str(self.__unicode__())
 
 
-class GameEvent(models.Model):
-    """
-        A string of text that represents a single event in the battle.
-        One Character's turn is made up of several events.
-        ex: Char:1,Move:0 means character of pk1 moved one space to the left
-    """
-
-    event_data = models.CharField(max_length='32')
-
-    battle = models.ForeignKey('Battle', related_name='battle_history')
+# class GameEvent(models.Model):
+#     """
+#     """
+# 
+#     battle
+#     character
+#     frame
+#     move_row
+#     move_column
+#     shoot_direction
+#     damage_taken
+#     message
+#
+#
+#
+# class CharacterMove(models.Model):
+#     battle
+#     character
+#     frame
+#     move_row
+#     move_column
+#     shoot_direction
+#     message
 
 
 class TerrainMap(models.Model):
@@ -65,7 +69,7 @@ class TerrainMap(models.Model):
         at the bottom right. Assumes a grid of 16x9
     """
 
-    map_data = models.CharField(max_length='512')
+    map_data = models.CharField(max_length='2048')
 
 
 ###########################################
@@ -133,27 +137,8 @@ class Character(MapNodeClass):
     player = models.ForeignKey('Player', related_name='characters', null=True, blank=True)
 
     strength = models.IntegerField(default=0)
-    # hit_points = models.IntegerField(default=0)
-    #
-    # total_hit_points = models.IntegerField(default=0)
-    #
-    # action_points = models.IntegerField(default=0)
-    #
-    # total_action_points = models.IntegerField(default=0)
-    #
-    # action_point_recovery_speed = models.IntegerField(default=0)
 
     round = models.IntegerField(default=0)
-
-    # def offset_action_points(self, _amount):
-    #
-    #     self.action_points += _amount
-    #
-    #     #clamp
-    #     if self.action_points <= 0:
-    #         self.action_points = 0
-    #     if self.action_points >= self.total_action_points:
-    #         self.action_points = self.total_action_points
 
 
 class Item(MapNodeClass):

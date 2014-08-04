@@ -9,8 +9,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.serializers import serialize
 
 
-from battle_machine import make_new_battle, choose_active_character, make_battle_dictionary, move_node,\
-    end_active_characters_turn, use_item
+from battle_machine import make_new_battle, make_battle_dictionary, move_character, use_item
 from models import Battle, TerrainMap, Character
 
 
@@ -22,7 +21,7 @@ def battle(_request):
         new_battle = Battle.objects.filter(
             characters__in=_request.user.player.characters.all()
         ).distinct()[0]
-        choose_active_character(new_battle)
+        # choose_active_character(new_battle)
     except IndexError:
         new_battle = make_new_battle(_character_list=None)
 
@@ -61,25 +60,14 @@ def perform_action(_request):
     action_dictionary = json.loads(_request.GET.get('action_dictionary'))
 
     #process action
-    if action_dictionary.get('move') is not None:
-        move_node(
-            _node=battle.active_character,
-            _facing=action_dictionary.get('move'),
+    if action_dictionary.get('action') == 'move':
+        move_character(
+            _character_id=action_dictionary.get('character'),
+            _column=action_dictionary.get('column'),
+            _row=action_dictionary.get('row'),
             _battle=battle,
         )
 
-    elif action_dictionary.get('end_turn') is not None:
-        end_active_characters_turn(
-            _battle=battle,
-        )
-
-    elif action_dictionary.get('use_item') is not None:
-        use_item(
-            _node=battle.active_character,
-            _item=action_dictionary.get('use_item'),
-            _facing=action_dictionary.get('use_item_facing'),
-            _terrain_map=battle.terrain_map,
-        )
 
     battle, battle_dictionary = make_battle_dictionary(battle_id)
 

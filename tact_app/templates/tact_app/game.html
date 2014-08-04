@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 <html>
 
 <head>
@@ -55,6 +57,31 @@
 		    font-family:courier;
 		}
 
+        .background_image
+        {
+            position: relative;
+            left:0;
+            top:0;
+            z-index: 1;
+        }
+
+        .character
+        {
+            position: absolute;
+            left:0;
+            top:0;
+            z-index: 2;
+        }
+
+        .infoBox
+        {
+            position: absolute;
+            background-color: #fff;
+            width: 64px;
+            height: 32px;
+            z-index: 3;
+        }
+
 	</style>
 
 </head>
@@ -67,32 +94,35 @@
             <table>
 
                 <tr>
-
-                    <td id="canvas" style="background-color:#000"></td>
-
-                </tr>
-
-
-                <tr>
-
                     <td>
-                        <table id="menu" style="background-color:#888;color:#fff" width="100%">
-                            <tr><td><button style="color:black" onclick="test()">Enter Battle</button></td></tr>
+                        <table>
+                            <tbody id="canvas">
+                            </tbody>
                         </table>
                     </td>
+                </tr>
 
+                <tr>
+                    <td>
+                        <table id="menu" style="background-color:#888;color:#000" width="100%">
+                            <tr><td><button style="color:black" onclick="getBattle()">Enter Battle</button></td></tr>
+                        </table>
+                    </td>
                 </tr>
 
             </table>
 
 		</div>
 
+        <div class="infoBox">
+        </div>
+
 
 </body>
 
 <script type="text/javascript">
 
-    function test()
+    function getBattle()
     {
 
         $.ajax(
@@ -114,33 +144,12 @@
             {
 
                 // successful request; do something with the data
-
-                battleDictionary = _response;
-                console.log(battleDictionary);
-
-                //parse characters
-                nodeList = JSON.parse( battleDictionary.node_list );
-
-                //set active character
-                activeDroid = battleDictionary.active_character;
-                setActiveCharacter();
-
-                //redraw the canvas
-                drawCanvas();
-
-                startRootMode();
-
+                parseBattle( _response );
 
             },
 
             error:function(xhr, ajaxOptions, thrownError)
             {
-
-                // failed request; give feedback to user
-{#                $('#searching_spinner_center').hide();#}
-{#                $('#sync_modal_error').show();#}
-{#                $('#sync_modal_error').html('<p class="error"><strong>Oops!</strong> Try that again in a few moments.</p>');#}
-
             }
 
         });
@@ -149,18 +158,20 @@
 
 //BATTLE INFO
 var battleDictionary = null;
-var nodeList = new Array();
-var activeDroid = null;
+var characterList = new Array();
+var selectedCharacter = null;
+var selectedCharacterPk = -1;
 var playerId = {{ user.id }};
+var currentFrame = 0;
 
 
 ////MODES
 var MODE_ROOT = 0;
 var MODE_ACTIVE_NODE = 1;
-var MODE_ACTIVE_NODE_MOVE = 2;
+var MODE_MOVE = 2;
 var MODE_SCAN = 3;
 
-var mode = MODE_ROOT;
+var mode = MODE_SCAN;
 
 //TERRAIN
 var TERRAIN_TYPE_PATH = 0;
@@ -170,16 +181,16 @@ var TERRAIN_TYPE_WATER = 2;
 var TERRAIN_COLORS = ['#839e4f', '#e9f3d6', '#496fa3'];
 
 //NODE INFORMATION
-var FACING_ARRAY = ['<', '^', '>', 'v'];
 var SCANNED_CHARACTER_COLOR = "#F00";
 var ACTIVE_CHARACTER_COLOR = "#00F";
 
 ////CANVAS AND BLOCKS
-var NUM_COLUMNS = 16;
-var NUM_ROWS = 9;
+var NUM_COLUMNS = 0; //define when receiving battle dictionarys
+var NUM_ROWS = 0;
 var TOTAL_BLOCKS = NUM_COLUMNS * NUM_ROWS;
 var blockArray = new Array();
 var selectedBlock = null;
+
 
 
 function drawCanvas()
@@ -193,6 +204,7 @@ function drawCanvas()
     var currentRow = 0;
 
     $("#canvas").empty();
+    $("#canvas").append( "<tr>" );
 
     //terrain pass
     for( var i = 0; i < splitData.length; i++ )
@@ -205,27 +217,42 @@ function drawCanvas()
             currentColumn = 0;
             currentRow++;
 
-            $("#canvas").append( "<br>" );
+            $("#canvas").append( "</tr><tr>" );
         }
 
         var block = new Block( currentColumn, currentRow, parseInt(splitData[i]) );
-        block.updateTerrainType( block.terrainType );
 
         blockArray.push( block );
 
-        $("#canvas").append( block.spanText );
+        $("#canvas").append( block.cellText );
 
     }
 
+    $("#canvas").append( "</tr>" );
 
-    //node pass
-    for( var b = 0; b < blockArray.length; b++ )
+};
+
+
+
+function setupCharacters( _characterData )
+{
+
+    characterList = new Array();
+
+    //character pass
+    for( var c = 0; c < _characterData.length; c++ )
     {
 
-        blockArray[b].resetBlock();
+        characterList.push( new Character(_characterData[c]) )
 
     }
 
+};
+
+
+
+function setupEventListeners()
+{
 
     //event listeners
     document.ontouchstart = function(e)
@@ -238,30 +265,115 @@ function drawCanvas()
         e.preventDefault();
     };
 
-    $(".block").mousemove( function( e )
+    $('.character').on({ 'mousedown': function(e)
     {
-        //select
-        var block = getBlockWithId( $(this).attr("id") );
 
-        if( mode == MODE_SCAN )
-            block.selectBlock();
+        //get js character object
+        var character = getCharacterById( $(this).attr('id') );
+        character.select();
+
+
+    }});
+
+
+    $('.block').on({ 'mousedown': function(e)
+    {
+
+        var block = getBlockWithId( $(this).attr('id') );
+
+        console.log( $(this). attr('id') );
+        console.log( block );
+
+        if( mode == MODE_MOVE )
+        {
+            if( isBlockMovable(selectedCharacter, block, 1) )
+            {
+                performAction(JSON.stringify({
+                    action: 'move',
+                    character: selectedCharacter.id,
+                    column: block.col,
+                    row: block.row
+                }));
+            }
+        }
+
+    }});
+
+};
+
+
+
+function Character( _characterObject )
+{
+
+    this.fields = _characterObject.fields;
+    this.id = _characterObject.pk;
+    this.jqid = "#" + this.id;
+    this.divText = "<img class='character' id='" + this.id + "' src='{% static 'character.gif' %}'></img>";
+
+
+    //add to DOM
+    $("#canvas").append(this.divText);
+
+
+    //set position and rotation
+    var element = $(this.jqid);
+
+    this.col = this.fields['column'];
+    this.row = this.fields['row'];
+    var blockId = "#block_" + this.col + "_" + this.row;
+
+    element.offset({
+        top: $(blockId).offset().top,
+        left: $(blockId).offset().left
     });
 
-    $('.block').on({ 'touchstart' : function(e)
+    if( this.fields['facing'] == 0 )
+        rotate( element, 0.0 );
+    if( this.fields['facing'] == 1 )
+        rotate( element, 90.0 );
+    if( this.fields['facing'] == 2 )
+        rotate( element, 180.0 );
+    if( this.fields['facing'] == 3 )
+        rotate( element, 270.0 );
+
+    this.select = function()
     {
-        var block = getBlockWithId( $(this).attr("id") );
 
-        if( mode == MODE_SCAN )
-            block.selectBlock();
-    }});
+        if( selectedCharacter != null )
+            selectedCharacter.deselect();
 
-    $('.block').on({ 'mousedown' : function(e)
+        $(this.jqid).css("opacity", "0.5");
+
+        selectedCharacter = this;
+        selectedCharacterPk = this.id;
+
+        startScanMode();
+
+    };
+
+    this.deselect = function()
     {
-        var block = getBlockWithId( $(this).attr("id") );
 
-        if( mode == MODE_SCAN )
-            block.selectBlock();
-    }});
+        $(this.jqid).css("opacity", "1.0");
+
+    };
+
+
+};
+
+
+
+function getCharacterById( _id )
+{
+
+    for( var c = 0; c < characterList.length; c++ )
+    {
+        if( characterList[c].id == _id )
+            return characterList[c];
+    }
+
+    return null;
 
 };
 
@@ -270,158 +382,25 @@ function drawCanvas()
 function Block( _col, _row, _terrainType )
 {
 
-    this.bgColor = TERRAIN_COLORS[_terrainType];
-    this.fontColor = "";
-    this.character = "&nbsp;";
     this.row = _row;
     this.col = _col;
     this.terrainType = _terrainType;
 
-    //span
+    //id
     this.idText = "block_" + this.col + "_" + this.row;
-    this.jqIdText = "#" + this.idText;
-    this.spanText = "<span class='block' id='" + this.idText + "' style='background-color:" + this.bgColor + ";color:" + this.fontColor + "'>&nbsp;</span>";
-
-    //set reset block
-    this.resetBlock = function()
-    {
-
-        //if selected, keep bg color the same
-        if( selectedBlock == this )
-        {
-            this.selectBlock();
-            return;
-        }
+    this.jqid = "#" + this.idText;
 
 
-        //if contains the active character, update for that
-        if( activeDroid.fields['column'] == this.col && activeDroid.fields['row'] == this.row )
-        {
-            this.tempUpdateBlock( activeDroid.fields['font_color'], ACTIVE_CHARACTER_COLOR, FACING_ARRAY[activeDroid.fields['facing']] );
-            return;
-        }
+    //terrain
+    var graphicFile = '{% static 'ground.gif' %}';
 
+    if( _terrainType == 1 )
+        graphicFile = '{% static 'wall.gif' %}';
+    if( _terrainType == 2 )
+        graphicFile = '{% static 'water.gif' %}';
 
-        //if something is still here, change to that
-        var thingsOnThisBlock = getMapNodesOnBlock( this );
-
-        if( thingsOnThisBlock.length > 0 )
-        {
-
-            if( thingsOnThisBlock.length == 1 )//normal instance
-            {
-                var firstThing = thingsOnThisBlock[0];
-                this.tempUpdateBlock( firstThing.fields['font_color'], firstThing.fields['background_color'], FACING_ARRAY[firstThing.fields['facing']] );
-            }
-            else if( thingsOnThisBlock.length > 1 )
-            {
-
-                this.tempUpdateBlock( "#000", this.bgColor, "?" );
-            }
-
-            return;
-
-        }
-
-
-        //update to normal block colors if nothing on it
-        $(this.jqIdText).css( "color", this.fontColor );
-        $(this.jqIdText).css( "background-color", this.bgColor );
-        $(this.jqIdText).html( this.character );
-
-    };
-
-
-    this.tempUpdateBlock = function( _fontColor, _bgColor, _character )
-    {
-
-        if( _fontColor != "" )
-            $(this.jqIdText).css( "color", _fontColor );
-        else
-            $(this.jqIdText).css( "color", this.fontColor );
-
-        if( _bgColor != "" )
-            $(this.jqIdText).css( "background-color", _bgColor );
-        else
-            $(this.jqIdText).css( "background-color", this.bgColor );
-
-        $(this.jqIdText).html( _character );
-
-
-        //if selected, keep bg color the same
-        if( selectedBlock == this )
-        {
-            this.selectBlock();
-        }
-
-    };
-
-
-    this.updateTerrainType = function( _terrainType )
-    {
-
-        this.terrainType = _terrainType;
-
-        if( this.terrainType == TERRAIN_TYPE_PATH )
-        {
-
-            this.fontColor = "#888";
-            this.bgColor = "#839e4f";
-            this.character = "&nbsp;";
-
-        }
-        else if( this.terrainType == TERRAIN_TYPE_WALL )
-        {
-
-            this.fontColor = "#000";
-            this.bgColor = "#e9f3d6";
-            this.character = "&nbsp;";
-
-        }
-        else if( this.terrainType == TERRAIN_TYPE_WATER )
-        {
-
-            this.fontColor = "#000";
-            this.bgColor = "#496fa3";
-            this.character = "&nbsp;";
-
-        }
-
-    };
-
-
-    //select
-    this.selectBlock = function()
-    {
-
-        if( selectedBlock != null )
-            selectedBlock.deselectBlock();
-
-        selectedBlock = this;
-
-
-        //special select color
-        $(this.jqIdText).css("background-color", SCANNED_CHARACTER_COLOR);
-
-
-        //update menu based on mode
-        if( mode == MODE_SCAN )
-            startScanMode( this );
-
-    };
-
-
-
-    //deselect
-    this.deselectBlock = function()
-    {
-
-        selectedBlock = null;
-
-        //reset to normal color
-        this.resetBlock();
-
-    };
+    var bgImgText =  "<img class='background_image' src='" + graphicFile + "'></img>";
+    this.cellText = "<td class='block' id='" + this.idText + "'><div style='position:relative;left:0;top:0;'>" + bgImgText + "</div></td>";
 
 };
 
@@ -462,9 +441,42 @@ function getBlockWithId( _id )
     var col = splitId[1];
     var row = splitId[2];
 
-    var blockIndex = (parseInt(row) * NUM_COLUMNS) + parseInt(col);
+    return getBlockWithCoordinates( parseInt(col), parseInt(row) );
+
+};
+
+
+
+function getBlockWithCoordinates( _col, _row )
+{
+
+    var blockIndex = ( _row * NUM_COLUMNS ) + _col;
 
     return blockArray[blockIndex];
+
+};
+
+
+function isBlockMovable( _character, _block, _distance )
+{
+
+    // bail if not correct terrain type
+    if( _block.terrainType != 0 )
+        return false;
+
+    var colDif = Math.abs(_character.col - _block.col);
+    var rowDif = Math.abs(_character.row - _block.row);
+    var totalDistance = colDif + rowDif;
+
+    // bail if same block character is standing on
+    if( totalDistance == 0 )
+        return false;
+
+    // bail if more than allowed distance
+    if( totalDistance > _distance )
+        return false;
+
+    return true;
 
 };
 
@@ -472,52 +484,36 @@ function getBlockWithId( _id )
 ////////////////MODES
 
 
-
-function startRootMode()
+function startScanMode()
 {
 
-    mode = MODE_ROOT;
+    mode = MODE_SCAN;
 
-    //remove selected block
-    if( selectedBlock != null )
+
+
+    if( selectedCharacter != null )
     {
-        var lastSelectedBlock = selectedBlock;
-        selectedBlock = null;
-        lastSelectedBlock.resetBlock();
+        updateCommandMenuForCharacter( selectedCharacter );
+    }
+    else
+    {
+        document.getElementById("menu").innerHTML = drawFrameBar();
     }
 
-
-    //update label
-    var infoLabelText = "";
-
-    infoLabelText += "<tr><td><br></td></tr>";
-    infoLabelText += "<tr><td><br></td></tr>";
-    infoLabelText += "<tr><td><br></td></tr>";
-
-    //don't show comm button if it isn't this player's turn
-    if( activeDroid.fields['player'] == playerId )
-        infoLabelText += "<tr><td>"  + makeButtonChain( [["comm", "startActiveDroidMode"], ["scan", "startScanMode"], ["hist", "bla"]] ) + "</td></tr>";
-    else
-        infoLabelText += "<tr><td>"  + makeButtonChain( [["scan", "startScanMode"], ["hist", "bla"]] ) + "</td></tr>";
-
-    document.getElementById("menu").innerHTML = infoLabelText;
 
 };
 
 
-function startActiveDroidMode()
+
+function updateCommandMenuForCharacter( _character )
 {
 
-    mode = MODE_ACTIVE_NODE;
+    var commandLabelText = drawFrameBar();
+    commandLabelText += "<tr><td>ID:" + _character.fields['name'] + "</td></tr>";
+    commandLabelText += "<tr><td>CIV:" + _character.fields['strength'] + "</td></tr>";
+    commandLabelText += "<tr><td><button onclick='startMoveMode()'>MOVE</button></td></tr>";
 
-    var infoLabelText = "";
-
-    infoLabelText += "<tr><td>"+ activeDroid.fields['name'] + "</td></tr>";
-    infoLabelText += "<tr><td>HP: " + pad(activeDroid.fields['hit_points'], 3) + " / " + pad(activeDroid.fields['total_hit_points'], 3) + "</td></tr>";
-    infoLabelText += "<tr><td>AP: " + pad(activeDroid.fields['action_points'], 3) + " / " + pad(activeDroid.fields['total_action_points'], 3) + "</td></tr>";
-    infoLabelText += "<tr><td>"  + makeButtonChain( [["<<<<", "startRootMode"],  ["move", "startMoveMode"], ["end ", "endTurn"]] ) + "</td></tr>";
-
-    document.getElementById("menu").innerHTML = infoLabelText;
+    document.getElementById("menu").innerHTML = commandLabelText;
 
 };
 
@@ -526,54 +522,37 @@ function startActiveDroidMode()
 function startMoveMode()
 {
 
-    mode = MODE_ACTIVE_NODE_MOVE;
+    mode = MODE_MOVE;
 
-    var infoLabelText = "";
+    //highlight available blocks for selected character
+    for( var b = 0; b < blockArray.length; b++ )
+    {
 
-    infoLabelText += "<tr><td>&nbsp&nbsp&nbsp&nbsp&nbsp|" + makeButton( "&nbspup&nbsp", "move", 1 ) + "|AP:" + pad(activeDroid.fields['action_points'], 2) + "</td></tr>";
-    infoLabelText += "<tr><td>|" + makeButton( "left", "move", 0 ) + "|&nbsp&nbsp&nbsp&nbsp|"  + makeButton( "rigt", "move", 2 ) + "|</td></tr>";
-    infoLabelText += "<tr><td><div align='center'>|" + makeButton( "down", "move", 3 ) + "|</div></td></tr>";
-    infoLabelText += "<tr><td>|"  + makeButton( "<<<<", "startActiveDroidMode" ) + "|</td></tr>";
+        var block = blockArray[b];
 
-    document.getElementById("menu").innerHTML = infoLabelText;
+        if( isBlockMovable(selectedCharacter, block, 1) == true )
+        {
+            $(block.jqid).css('opacity', '0.5');
+            $(block.jqid).css('background-color', '#f00');
+        }
+
+    }
+
+
+    var commandLabelText = drawFrameBar();
+    commandLabelText += "<tr><td>MOVE TO NEW SPACE</td></tr>";
+    commandLabelText += "<tr><td><button onclick='startScanMode()'>CANCEL</button></td></tr>";
+    document.getElementById("menu").innerHTML = commandLabelText;
+
 
 };
 
 
 
-function startScanMode()
+function drawFrameBar()
 {
-
-    mode = MODE_SCAN;
-
-    var infoLabelText = "";
-
-    var blockContents = getMapNodesOnBlock( selectedBlock );
-
-    if( blockContents.length < 1 || selectedBlock == null )
-    {
-        infoLabelText += "<tr><td>scanning</td></tr>";
-        infoLabelText += "<tr><td>&nbsp</td></tr>";
-        infoLabelText += "<tr><td>&nbsp</td></tr>";
-    }
-    else
-    {
-
-        var thing = blockContents[0];
-
-        //name
-        infoLabelText += "<tr><td>"+ thing.fields['name'] + "</td></tr>";
-        infoLabelText += "<tr><td>HP: " + pad(thing.fields['hit_points'], 3) + " / " + pad(thing.fields['total_hit_points'], 3) + "</td></tr>";
-        infoLabelText += "<tr><td>AP: " + pad(thing.fields['action_points'], 3) + " / " + pad(thing.fields['total_action_points'], 3) + "</td></tr>";
-
-    }
-
-    infoLabelText += "<tr><td>|"  + makeButton( "<<<<", "startRootMode" ) + "|</td></tr>";
-
-    document.getElementById("menu").innerHTML = infoLabelText;
-
+    return "<tr><td><button style='color:black' onclick='frameBack()'>&lt;</button> CURRENT FRAME: " + currentFrame + " <button style='color:black' onclick='frameBack()'>&gt;</button></td></tr>"
 };
-
 
 
 /////////////////////////ACTIONS
@@ -622,24 +601,7 @@ function performAction( _actionDictionary )
         success:function( _response )
         {
 
-            battleDictionary = _response;
-            console.log( _response );
-
-            nodeList = JSON.parse( battleDictionary.node_list );
-            setActiveCharacter( battleDictionary.active_character );
-
-
-            //redraw the canvas
-            drawCanvas()
-
-
-            //go to root menu if not your turn anymore
-            if( activeDroid.fields['player'] != playerId )
-                startRootMode();
-            else if( mode == MODE_ACTIVE_NODE_MOVE )
-                startMoveMode();
-            else if( mode == MODE_ACTIVE_NODE )
-                startActiveDroidMode();
+            parseBattle( _response );
 
         }
 
@@ -649,63 +611,52 @@ function performAction( _actionDictionary )
 
 
 
-function setActiveCharacter( _droid )
+function parseBattle( _battleDictionary )
 {
 
-    activeDroid = _droid;
+    battleDictionary = _battleDictionary;
+    console.log(battleDictionary);
 
-    for( node in nodeList )
+    //set globals
+    NUM_COLUMNS = battleDictionary.num_columns;
+    NUM_ROWS = battleDictionary.num_rows;
+    TOTAL_BLOCKS = NUM_COLUMNS * NUM_ROWS;
+
+    //redraw the canvas
+    drawCanvas();
+
+    //parse characters
+    characterData = JSON.parse( battleDictionary.node_list );
+    setupCharacters( characterData );
+
+    //event listeners
+    setupEventListeners();
+
+    if( selectedCharacterPk == -1 )
+        startScanMode();
+    else
     {
-
-        if( nodeList[node].pk == battleDictionary.active_character )
-        {
-
-            activeDroid = nodeList[node];
-            return;
-
-        }
-
+        getCharacterById( selectedCharacterPk).select();
     }
 
 };
 
 
-function makeButtonChain( _buttonArray )
+
+function rotate( _element, _angle )
 {
 
-    var buttonChainString = "|";
+    var rotate = 'rotate(' + _angle + 'deg)';
 
-    for( button in _buttonArray )
-    {
+    _element.css({
+        '-webkit-transform': rotate,
+        '-moz-transform': rotate,
+        '-o-transform': rotate,
+        '-ms-transform': rotate,
+        'transform': rotate
+    })
 
-        var printText = _buttonArray[button][0];
-        var functionText = _buttonArray[button][1];
-
-        buttonChainString += makeButton( printText, functionText );
-
-        buttonChainString += "|";
-
-    }
-
-    return buttonChainString;
-
-};
-
-
-
-function makeButton( _text, _functionName, _args )
-{
-
-    if( _args == null )
-        _args = ""
-
-    var functionPlusArgs = _functionName + "(" + _args + ")"
-
-    var buttonText = "<a class='menu_button' ontouchstart='" + functionPlusArgs + "' onclick='" + functionPlusArgs + "'>" + _text + "</a>";
-
-    return buttonText;
-
-};
+}
 
 
 

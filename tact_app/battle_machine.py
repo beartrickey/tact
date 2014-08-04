@@ -6,11 +6,12 @@ from django.forms.models import model_to_dict
 from django.core.serializers import serialize
 
 #app imports
+import math
 from models import Battle, TerrainMap, Character, Player
 
 
 #blocks
-NUM_COLUMNS = 16
+NUM_COLUMNS = 9
 NUM_ROWS = 9
 TOTAL_BLOCKS = NUM_COLUMNS * NUM_ROWS
 
@@ -56,19 +57,16 @@ def make_random_character():
     rand_name = "character_" + str(rand_color)
 
     #stats
-    hit_points = random.randrange(10, 30)
-    action_points = 5
-    action_point_recovery_speed = 1
+    strength = random.randrange(10, 30)
+
+    facing = random.randrange(0, 3)
 
     #create character
     character = Character.objects.create(
         name=rand_name,
         font_color=color,
-        action_points=action_points,
-        total_action_points=action_points,
-        hit_points=hit_points,
-        total_hit_points=hit_points,
-        action_point_recovery_speed=action_point_recovery_speed,
+        strength=strength,
+        facing=facing,
     )
 
     character.save()
@@ -134,59 +132,59 @@ def make_new_battle(_character_list):
     return new_battle
 
 
-def end_active_characters_turn(_battle):
-
-    _battle.active_character.round = _battle.current_round
-
-    _battle.active_character.save()
-
-    choose_active_character(_battle)
-
-
-def choose_active_character(_battle):
-
-    print "choosing active character for round {0}".format(_battle.current_round)
-
-    active_player = _battle.active_character.player
-
-    # is there a character that this player controls that hasn't gone this round yet?
-    active_player_characters = Character.objects.filter(
-        battle=_battle,
-        player=active_player,
-        round=_battle.current_round - 1,
-    )
-
-    if len(active_player_characters) > 0:
-        _battle.active_character = active_player_characters[0]
-        _battle.save()
-        return
-    else:
-        remaining_player_characters = Character.objects.filter(
-            battle=_battle,
-            round=_battle.current_round - 1,
-        )
-
-        if len(remaining_player_characters) > 0:
-            _battle.active_character = remaining_player_characters[0]
-            _battle.save()
-            return
-
-    #if no character returned, increase round number, and replenish action points
-    increment_current_round(_battle)
+# def end_active_characters_turn(_battle):
+#
+#     _battle.active_character.round = _battle.current_round
+#
+#     _battle.active_character.save()
+#
+#     choose_active_character(_battle)
 
 
-def increment_current_round(_battle):
-
-    _battle.current_round += 1
-
-    characters = _battle.characters.all()
-
-    for character in characters:
-        character.offset_action_points(character.action_point_recovery_speed)
-        character.save()
-
-    # TODO: Ensure same player doesn't go twice
-    choose_active_character(_battle)
+# def choose_active_character(_battle):
+#
+#     print "choosing active character for round {0}".format(_battle.current_round)
+#
+#     active_player = _battle.active_character.player
+#
+#     # is there a character that this player controls that hasn't gone this round yet?
+#     active_player_characters = Character.objects.filter(
+#         battle=_battle,
+#         player=active_player,
+#         round=_battle.current_round - 1,
+#     )
+#
+#     if len(active_player_characters) > 0:
+#         _battle.active_character = active_player_characters[0]
+#         _battle.save()
+#         return
+#     else:
+#         remaining_player_characters = Character.objects.filter(
+#             battle=_battle,
+#             round=_battle.current_round - 1,
+#         )
+#
+#         if len(remaining_player_characters) > 0:
+#             _battle.active_character = remaining_player_characters[0]
+#             _battle.save()
+#             return
+#
+#     #if no character returned, increase round number, and replenish action points
+#     increment_current_round(_battle)
+#
+#
+# def increment_current_round(_battle):
+#
+#     _battle.current_round += 1
+#
+#     characters = _battle.characters.all()
+#
+#     for character in characters:
+#         character.offset_action_points(character.action_point_recovery_speed)
+#         character.save()
+#
+#     # TODO: Ensure same player doesn't go twice
+#     choose_active_character(_battle)
 
 
 def make_battle_dictionary(_battle_id):
@@ -201,62 +199,38 @@ def make_battle_dictionary(_battle_id):
     #nodes
     battle_dictionary['node_list'] = serialize('json', battle.characters.all())
 
+    #globals
+    battle_dictionary['num_columns'] = NUM_COLUMNS
+    battle_dictionary['num_rows'] = NUM_ROWS
+
     return battle, battle_dictionary
 
 
-def move_node(_node, _facing, _battle):
+def move_character(_character_id, _column, _row, _battle):
 
-    current_col = _node.column
-    current_row = _node.row
-    map_list = _battle.terrain_map.map_data.split('|')
+    character = Character.objects.get(pk=_character_id)
 
-    if _facing == 0:
-        current_col -= 1
-    if _facing == 1:
-        current_row -= 1
-    if _facing == 2:
-        current_col += 1
-    if _facing == 3:
-        current_row += 1
+    # determine facing
+    col_dif = character.column - _column
+    row_dif = character.row - _row
+    new_facing = character.facing
 
-    #clamp
-    if current_row > NUM_ROWS - 1:
-        current_row = NUM_ROWS - 1
-    if current_row < 0:
-        current_row = 0
-    if current_col > NUM_COLUMNS - 1:
-        current_col = NUM_COLUMNS - 1
-    if current_col < 0:
-        current_col = 0
+    if col_dif is 1:
+        new_facing = 0
+    elif col_dif is -1:
+        new_facing = 2
+    elif row_dif is 1:
+        new_facing = 1
+    elif row_dif is -1:
+        new_facing = 3
 
-    # don't move if the next block is a wall
-    next_block = int(map_list[get_block_index(current_col, current_row)])
-
-    _node.facing = _facing
-
-    #just update facing if no more action points
-    if _node.action_points <= 0:
-        _node.save()
-        return
-
-    #don't move if other character is there
-    if any(
-            _battle.characters.filter(
-                column=current_col,
-                row=current_row,
-            )
-    ):
-        _node.save()
-        return
-
-    if next_block == TERRAIN_TYPE_PATH:
-        # print 'cannot move to block at {0}, {1}'.format(current_col, current_row)
-        _node.column = current_col
-        _node.row = current_row
-        _node.offset_action_points(-1)
+    # set paramters
+    character.column = _column;
+    character.row = _row;
+    character.facing = new_facing
 
     #update node info
-    _node.save()
+    character.save()
 
     # print 'moved to block at {0}, {1}'.format(current_col, current_row)
 
