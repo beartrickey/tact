@@ -11,13 +11,14 @@ function onInstantiate()
 }
 
 
-function onInitialize( _characterCoordinates : Vector3 )
+function onInitialize( _characterCoordinates : Vector3, _down : Vector3 )
 {
 
-	gameObject.SetActive( true );
-	gameObject.transform.position = _characterCoordinates * Tile.blockSize;
 	coordinates = _characterCoordinates;
-
+	down = _down;
+	gameObject.SetActive( true );
+	gameObject.transform.position = (_characterCoordinates * Tile.blockSize) + (down * 0.5);
+	
 }
 
 

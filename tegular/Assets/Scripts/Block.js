@@ -1,7 +1,7 @@
 ﻿#pragma strict
 
 public static var blockSize : float = 1.0;
-public static var faceCoordinateList = [
+public static var facingList = [
 	Vector3(0.0, 1.0, 0.0),  	// Top
 	Vector3(0.0, -1.0, 0.0),  	// Bottom
 	Vector3(0.0, 0.0, 1.0),  	// North
@@ -14,7 +14,6 @@ public var coordinates : Vector3;
 public var faceList = new Face[6];
 
 
-
 function onInstantiate()
 {
 
@@ -22,7 +21,7 @@ function onInstantiate()
 
 	for( var f : int = 0; f < 6; f++ )
 	{
-		faceList[f].onInstantiate( this );
+		faceList[f].onInstantiate( this, facingList[f] );
 	}
 
 }
@@ -44,25 +43,47 @@ function blockUpdate()
 }
 
 
-
-function getFacesAdjecentToFace( _targetFaceCoordinates : Vector3 )
+function getFacesNearPoint( _targetPoint : Vector3, _threshold : float)
 {
 
-	var threshold : float = 1.0;
+	var returnFaceList = new Array();
 
 	for( var f : int = 0; f < 6; f++ )
 	{
-		var absoluteFaceCoordinate : Vector3 = coordinates + faceCoordinateList[f];
-		var vectorDif : Vector3 = absoluteFaceCoordinate - _targetFaceCoordinates;
-		var distance : float = Mathf.Abs(vectorDif.x) + Mathf.Abs(vectorDif.y) + Mathf.Abs(vectorDif.z);
-		Debug.Log( distance );
+		var face : Face = faceList[f];
+		var distance : float = (faceList[f].gameObject.transform.position - _targetPoint).magnitude;
 
-		if( distance <= threshold )
+		if( distance <= _threshold )
 		{
-			faceList[f].gameObject.renderer.material.SetColor( "_Color", Color(1.0, 0.0, 0.0, 1.0) );
+			returnFaceList.Push( face );
 		}
 	}
 
+	return returnFaceList;
+
+}
+
+
+function getAdjacentFaces( _targetFace : Face )
+{
+	var returnFaceList = new Array();
+
+	for( var f : int = 0; f < 6; f++ )
+	{
+		var face : Face = faceList[f];
+		var distance : float = (faceList[f].gameObject.transform.position - _targetFace.gameObject.transform.position).magnitude;
+
+		// Skip if face facing is opposite of targetFace's facing
+		if( face.facing == (_targetFace.facing * -1.0) )
+			continue;
+
+		if( distance <= 1.0 )
+		{
+			returnFaceList.Push( face );
+		}
+	}
+
+	return returnFaceList;
 }
 
 

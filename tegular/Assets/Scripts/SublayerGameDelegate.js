@@ -55,10 +55,10 @@ function onInstantiate()
 	arrangeBlocksFromData( tempBlockData );
 
 	// Character
-	character.onInitialize( Vector3(1.0, 1.0, 0.0) );
+	character.onInitialize( Vector3(1.0, 1.0, 0.0), Vector3(0.0, -1.0, 0.0) );
 
 	// TEST HACK
-	getFacesFacingCharacter();
+	getMovableFacesForCharacter( character );
 
 }
 
@@ -177,8 +177,10 @@ function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
 }
 
 
-function getFacesFacingCharacter()
+function getCharacterStandingFace( _character : Character )
 {
+
+	var faceList = new Array();
 
 	for( var b : int = 0; b < numBlocks; b++ )
 	{
@@ -188,9 +190,39 @@ function getFacesFacingCharacter()
 		if( block.gameObject.activeSelf == false )
 			continue;
 
-		block.getFacesAdjecentToFace( character.coordinates );
+		faceList = faceList.Concat( block.getFacesNearPoint( character.gameObject.transform.position, 0.5 ) );
 
 	};
+
+	// We should only have one element in the faceList at the end
+	return faceList[0];
+
+}
+
+
+function getMovableFacesForCharacter( _character : Character )
+{
+
+	var characterStandingFace : Face = getCharacterStandingFace( _character );
+	var faceList = new Array();
+
+	for( var b : int = 0; b < numBlocks; b++ )
+	{
+
+		var block : Block = blockList[b];
+
+		if( block.gameObject.activeSelf == false )
+			continue;
+
+		faceList = faceList.Concat( block.getAdjacentFaces( characterStandingFace ) );
+
+	};
+
+	for( var f : int = 0; f < faceList.length; f++ )
+	{
+		var face : Face = faceList[f];
+		face.gameObject.renderer.material.SetColor( "_Color", Color(1.0, 0.0, 0.0, 1.0) );
+	}
 
 }
 
