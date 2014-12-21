@@ -52,7 +52,7 @@ function onInstantiate()
 		block.onInstantiate();
 	}
 
-	arrangeBlocksFromData( tempBlockData );
+	arrangeBlocksFromData( shipBlockData );
 
 	// Character
 	character.onInitialize( Vector3(0.0, 1.0, 1.0), Vector3(0.0, 0.0, -1.0) );
@@ -96,50 +96,378 @@ function sublayerGameUpdate()
 // Blocks
 //----------------------------------------
 
-public static var tempBlockData = [
+public static var shipBlockData = [
 
 	// Row 1
 	{
-		"coordinates": [-1.0, 0.0, 0.0]
+		"coordinates": [-1.0, 0.0, 0.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 	{
-		"coordinates": [0.0, 0.0, 0.0]
+		"coordinates": [0.0, 0.0, 0.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 	{
-		"coordinates": [0.0, 1.0, 0.0]
+		"coordinates": [0.0, 1.0, 0.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/window",
+			"Textures/window",
+			"Textures/window",
+			"Textures/window",
+			"Textures/window"
+		]
 	},
 	{
-		"coordinates": [1.0, 0.0, 0.0]
+		"coordinates": [1.0, 0.0, 0.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 
 	// Row 2
 	{
-		"coordinates": [-1.0, 0.0, 1.0]
+		"coordinates": [-1.0, 0.0, 1.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 	{
-		"coordinates": [0.0, 0.0, 1.0]
+		"coordinates": [0.0, 0.0, 1.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 	{
-		"coordinates": [1.0, 0.0, 1.0]
+		"coordinates": [1.0, 0.0, 1.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 
 	// Row 3
 	{
-		"coordinates": [-1.0, 0.0, -1.0]
+		"coordinates": [-1.0, 0.0, -1.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 	{
-		"coordinates": [0.0, 0.0, -1.0]
+		"coordinates": [0.0, 0.0, -1.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 	{
-		"coordinates": [1.0, 0.0, -1.0]
+		"coordinates": [1.0, 0.0, -1.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 
 	// Row 4
 	{
-		"coordinates": [-1.0, 0.0, -2.0]
+		"coordinates": [-1.0, 0.0, -2.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/thruster",
+			"Textures/panel",
+			"Textures/panel"
+		]
 	},
 	{
-		"coordinates": [1.0, 0.0, -2.0]
+		"coordinates": [1.0, 0.0, -2.0],
+		"textures": [
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/panel",
+			"Textures/thruster",
+			"Textures/panel",
+			"Textures/panel"
+		]
+	}
+
+];
+
+public static var asteroidBlockData = [
+
+	// Row 1
+	{
+		"coordinates": [-1.0, 0.0, 0.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [0.0, 0.0, 0.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [0.0, -1.0, 0.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [0.0, 1.0, 0.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, 0.0, 0.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, 1.0, 0.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [2.0, 1.0, 0.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+
+	// Row 2
+	{
+		"coordinates": [-1.0, 0.0, 1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [-2.0, 0.0, 1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [0.0, 0.0, 1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, 0.0, 1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, -1.0, 1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+
+	// Row 3
+	{
+		"coordinates": [-1.0, 0.0, -1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [0.0, 0.0, -1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [0.0, -1.0, -1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, 0.0, -1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, 1.0, -1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, 2.0, -1.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+
+	// Row 4
+	{
+		"coordinates": [-1.0, 0.0, -2.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
+	},
+	{
+		"coordinates": [1.0, 0.0, -2.0],
+		"textures": [
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid",
+			"Textures/asteroid"
+		]
 	}
 
 ];
@@ -155,6 +483,7 @@ function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
 	{
 
 		// var blockData : System.Collections.Hashtable = getFreeBlock();
+		// Coordinates
 		var coordinateArray : float[] = blockData["coordinates"];
 		
 		var blockCoordinates : Vector3 = Vector3(
@@ -167,10 +496,16 @@ function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
 		if( getBlockAtCoordinates( blockCoordinates ) )
 			continue; 
 
+		// Textures
+		var textureArray : String[] = blockData["textures"];
+
+		if( textureArray == null )
+			textureArray = new String[0];
+
 		// Initialize new block
 		var block : Block = getFreeBlock();
 
-		block.onInitialize( blockCoordinates );
+		block.onInitialize( blockCoordinates, textureArray );
 
 	}
 

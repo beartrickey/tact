@@ -27,12 +27,30 @@ function onInstantiate()
 }
 
 
-function onInitialize( _blockCoordinates : Vector3 )
+function onInitialize( _blockCoordinates : Vector3, _textureArray : String[] )
 {
 
 	gameObject.SetActive( true );
+
+	// Position
 	gameObject.transform.position = _blockCoordinates * blockSize;
 	coordinates = _blockCoordinates;
+
+	// Face textures
+	if( _textureArray.length > 0 )
+	{
+
+		for( var t : int = 0; t < _textureArray.length; t++ )
+		{
+			
+			var texture : Texture2D = Resources.Load( _textureArray[t], Texture2D );
+
+			faceList[t].texture = texture;
+			faceList[t].gameObject.renderer.material.mainTexture = texture;
+
+		}
+
+	}
 
 }
 
@@ -80,7 +98,7 @@ function getAdjacentFaces( _targetFace : Face )
 		// Skip inactive faces
 		if( face.gameObject.activeSelf == false )
 			continue;
-		
+
 		var distance : float = (faceList[f].gameObject.transform.position - _targetFace.gameObject.transform.position).magnitude;
 
 		// Skip if face facing is opposite of targetFace's facing

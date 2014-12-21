@@ -3,6 +3,7 @@
 public var parentBlock : Block;
 public var facing : Vector3;
 public var movable : boolean = false;
+public var texture : Texture2D = null;
 
 function onInstantiate( _parentBlock, _facing )
 {
@@ -25,10 +26,12 @@ function setMovable( _movable : boolean )
 
 	if( movable )
 	{
-		gameObject.renderer.material.SetColor( "_Color", Color(0.75, 0.75, 1.0, 1.0) );
+		gameObject.renderer.material.mainTexture = null;
+		gameObject.renderer.material.SetColor( "_Color", Color(0.5, 0.5, 1.0, 1.0) );
 	}
 	else
 	{
+		gameObject.renderer.material.mainTexture = texture;
 		gameObject.renderer.material.SetColor( "_Color", Color(1.0, 1.0, 1.0, 1.0) );
 	}
 
