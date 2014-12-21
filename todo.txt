@@ -1,4 +1,25 @@
-Players can only control their own characters
+Players decide moves for all characters per round
+
+Client has frame scrubbing feature that allows players to navigate previous moves,
+as well as make future moves
+
+Moves get resolved at deadline
+
+Players make moves. At deadline moves for each frame get resolved.
+Some planned moves remain in tact, and some get replaced based on what actually happened that frame.
+
+Frame is a single db entry that consists of a json object which holds all the events of that moment,
+regardless of whether or not the frame has been resolved or not.
+Both server and client know how to parse that json object.
+
+
+What to do about two units that want to enter same space during a frame?
+    -Stronger/faster unit takes the space?
+    -Units grapple on space?
+    -Neither can enter?
+
+Futures investment of moves?
+    -Players who lock in certain moves N frames in advance get some kind of bonus?
 
 Weapons / Item implementation
 
@@ -24,3 +45,22 @@ Game End
 Daily aspect
     -log in everyday for bonuses!
     -different days of the week have different character bonuses/effects
+
+
+
+Client parses generic battle dictionary and makes relevant objects
+    relevant objects persist in js memory
+    relevant objects are flexible enough to hold data that changes from frame to frame (hp, row, col, etc)
+    relevant objects:
+        -characters
+        -terrain map
+        -items
+
+Client stores frame data for each completed frame of the battle
+Client stores frame data for each frame of planned moves by players
+When a frame is scrubbed over, data from the frame object is parsed and shown visually
+
+Client sends planned moves to server. Server validates the moves are plausible
+Plausible moves are saved and then resolved with all other moves at the cycle deadline
+
+

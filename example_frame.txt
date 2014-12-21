@@ -1,0 +1,56 @@
+[
+	{
+		'frame': 0,
+		'characters': [
+			{
+				'name': 'bear',
+				'column': 0,
+				'row': 0,
+				'facing': 0,
+			},
+			{
+				'name': 'alex',
+				'column': 0,
+				'row': 0,
+				'facing': 0,
+			},
+		],
+		'events': [
+			{
+				'type': 'bullet',
+				'origin_character': 0,
+				'destination_column': 0,
+				'destination_row': 0,
+			},
+			{
+				'type': 'speech_bubble',
+				'character': 0,
+				'text': 'your ass is grass'
+			},
+			{
+				'type': 'damage',
+				'character': 
+				'text': 
+			},
+		]
+	},
+	{
+
+		'frame': 1
+
+		'characters': [
+
+			{
+				name: '',
+				column: 0,
+				row: 0,
+
+
+			}
+
+
+		]
+
+
+	}
+]

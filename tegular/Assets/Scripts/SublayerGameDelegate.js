@@ -114,8 +114,9 @@ public static var tempBlockData = [
 
 function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
 {
-
-	// System.Collections.Hashtable
+	// Uses Boo.Lang.Hash[] and System.Collections.Hashtable for temporary local testing.
+	// Will need to use SimpleJson (or something similar) when we want to pull JSON from Django.
+	// See "NetInterface.js" for an example of SimpleJson.
 
 	for( var blockData : System.Collections.Hashtable in _data )
 	{

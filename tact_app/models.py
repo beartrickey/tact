@@ -36,29 +36,18 @@ class Battle(models.Model):
         return str(self.__unicode__())
 
 
-# class GameEvent(models.Model):
+# class GameFrame(models.Model):
 #     """
 #     """
-# 
+#
 #     battle
-#     character
-#     frame
-#     move_row
-#     move_column
-#     shoot_direction
-#     damage_taken
-#     message
+#     frame_data - dictionary of all actual events that happened that frame
+
+# class PlayerMove
 #
-#
-#
-# class CharacterMove(models.Model):
 #     battle
-#     character
-#     frame
-#     move_row
-#     move_column
-#     shoot_direction
-#     message
+#     player
+#     frame_data - dictionary of all planned moves made by a certain player. should resemble frame_data dict of GameFrame
 
 
 class TerrainMap(models.Model):
