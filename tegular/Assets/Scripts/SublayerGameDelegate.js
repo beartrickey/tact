@@ -174,6 +174,35 @@ function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
 
 	}
 
+	turnOffHiddenFaces();
+
+}
+
+
+function turnOffHiddenFaces()
+{
+
+	for( var b : int = 0; b < numBlocks; b++ )
+	{
+
+		var block : Block = blockList[b];
+
+		if( block.gameObject.activeSelf == false )
+			continue;
+
+		for( var f : int = 0; f < 6; f++ )
+		{
+			var face : Face = block.faceList[f];
+			var absoluteCoordinates : Vector3 = block.coordinates + face.facing;
+			var adjacentBlock : Block = getBlockAtCoordinates( absoluteCoordinates );
+			if( adjacentBlock )
+			{
+				face.gameObject.SetActive( false );
+			}
+		}
+
+	};
+
 }
 
 

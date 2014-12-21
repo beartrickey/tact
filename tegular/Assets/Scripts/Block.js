@@ -51,6 +51,11 @@ function getFacesNearPoint( _targetPoint : Vector3, _threshold : float)
 	for( var f : int = 0; f < 6; f++ )
 	{
 		var face : Face = faceList[f];
+
+		// Skip inactive faces
+		if( face.gameObject.activeSelf == false )
+			continue;
+
 		var distance : float = (faceList[f].gameObject.transform.position - _targetPoint).magnitude;
 
 		if( distance <= _threshold )
@@ -71,6 +76,11 @@ function getAdjacentFaces( _targetFace : Face )
 	for( var f : int = 0; f < 6; f++ )
 	{
 		var face : Face = faceList[f];
+
+		// Skip inactive faces
+		if( face.gameObject.activeSelf == false )
+			continue;
+		
 		var distance : float = (faceList[f].gameObject.transform.position - _targetFace.gameObject.transform.position).magnitude;
 
 		// Skip if face facing is opposite of targetFace's facing

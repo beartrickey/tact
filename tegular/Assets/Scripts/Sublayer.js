@@ -3,7 +3,7 @@
 
 public var updateDelegate : function() = null;
 
-public var NUM_BUTTONS : int = 64;
+public var NUM_BUTTONS : int = 256;
 public var buttonList = new ButtonScript[NUM_BUTTONS];
 
 
