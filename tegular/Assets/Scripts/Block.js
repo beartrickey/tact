@@ -1,14 +1,29 @@
 ﻿#pragma strict
 
 public static var blockSize : float = 1.0;
+public static var faceCoordinateList = [
+	Vector3(0.0, 1.0, 0.0),  	// Top
+	Vector3(0.0, -1.0, 0.0),  	// Bottom
+	Vector3(0.0, 0.0, 1.0),  	// North
+	Vector3(0.0, 1.0, -1.0),  	// South
+	Vector3(1.0, 0.0, 0.0),  	// East
+	Vector3(-1.0, 0.0, 0.0)  	// West
+];
+
 public var coordinates : Vector3;
 public var faceList = new Face[6];
+
 
 
 function onInstantiate()
 {
 
 	gameObject.SetActive( false );
+
+	for( var f : int = 0; f < 6; f++ )
+	{
+		faceList[f].onInstantiate( this );
+	}
 
 }
 
@@ -25,6 +40,28 @@ function onInitialize( _blockCoordinates : Vector3 )
 
 function blockUpdate()
 {
+
+}
+
+
+
+function getFacesAdjecentToFace( _targetFaceCoordinates : Vector3 )
+{
+
+	var threshold : float = 1.0;
+
+	for( var f : int = 0; f < 6; f++ )
+	{
+		var absoluteFaceCoordinate : Vector3 = coordinates + faceCoordinateList[f];
+		var vectorDif : Vector3 = absoluteFaceCoordinate - _targetFaceCoordinates;
+		var distance : float = Mathf.Abs(vectorDif.x) + Mathf.Abs(vectorDif.y) + Mathf.Abs(vectorDif.z);
+		Debug.Log( distance );
+
+		if( distance <= threshold )
+		{
+			faceList[f].gameObject.renderer.material.SetColor( "_Color", Color(1.0, 0.0, 0.0, 1.0) );
+		}
+	}
 
 }
 

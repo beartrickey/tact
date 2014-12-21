@@ -1,9 +1,10 @@
 ﻿#pragma strict
 
-function Start () {
+public var parentBlock : Block;
 
-}
+function onInstantiate( _parentBlock )
+{
 
-function Update () {
+	parentBlock = _parentBlock;
 
 }

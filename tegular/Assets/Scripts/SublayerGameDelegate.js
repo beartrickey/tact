@@ -20,6 +20,7 @@ public var blockList = new Block[numBlocks];
 //----------------------------------------
 public static var numCharacters : int = 8;
 public var characterList = new Character[numCharacters];
+public var character : Character = null;
 
 //BUTTONS
 
@@ -53,6 +54,12 @@ function onInstantiate()
 
 	arrangeBlocksFromData( tempBlockData );
 
+	// Character
+	character.onInitialize( Vector3(1.0, 1.0, 0.0) );
+
+	// TEST HACK
+	getFacesFacingCharacter();
+
 }
 
 
@@ -80,6 +87,8 @@ function sublayerGameUpdate()
 
 // Any block with a face facing current coordinates.
 // Any block adjacent to the piece's standing block.
+
+
 
 
 
@@ -164,6 +173,24 @@ function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
 		block.onInitialize( blockCoordinates );
 
 	}
+
+}
+
+
+function getFacesFacingCharacter()
+{
+
+	for( var b : int = 0; b < numBlocks; b++ )
+	{
+
+		var block : Block = blockList[b];
+
+		if( block.gameObject.activeSelf == false )
+			continue;
+
+		block.getFacesAdjecentToFace( character.coordinates );
+
+	};
 
 }
 
