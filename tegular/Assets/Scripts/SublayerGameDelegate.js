@@ -52,13 +52,7 @@ function onInstantiate()
 		block.onInstantiate();
 	}
 
-	arrangeBlocksFromData( shipBlockData );
-
-	// Character
-	character.onInitialize( Vector3(0.0, 1.0, 1.0), Vector3(0.0, 0.0, -1.0) );
-
-	// TEST HACK
-	setMovableFacesForCharacter( character );
+	GameManager.instance.netInterface.arrangeBlocksFromData();
 
 }
 

@@ -24,6 +24,8 @@
 // public var SFX_CHOOSE_TARGET : AudioSource = null;
 // public var SFX_NULLIFICATION_IN_PROGRESS : AudioSource = null;
 
+// Network Interface
+public var netInterface : NetInterface;
 
 ////VARIABLES
 
