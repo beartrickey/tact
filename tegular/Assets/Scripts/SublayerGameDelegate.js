@@ -55,7 +55,7 @@ function onInstantiate()
 	arrangeBlocksFromData( tempBlockData );
 
 	// Character
-	character.onInitialize( Vector3(1.0, 1.0, 0.0), Vector3(0.0, -1.0, 0.0) );
+	character.onInitialize( Vector3(0.0, 1.0, 1.0), Vector3(0.0, 0.0, -1.0) );
 
 	// TEST HACK
 	getMovableFacesForCharacter( character );
@@ -221,7 +221,7 @@ function getMovableFacesForCharacter( _character : Character )
 	for( var f : int = 0; f < faceList.length; f++ )
 	{
 		var face : Face = faceList[f];
-		face.gameObject.renderer.material.SetColor( "_Color", Color(1.0, 0.0, 0.0, 1.0) );
+		face.gameObject.renderer.material.SetColor( "_Color", Color(0.75, 0.75, 1.0, 1.0) );
 	}
 
 }

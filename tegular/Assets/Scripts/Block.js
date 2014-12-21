@@ -5,7 +5,7 @@ public static var facingList = [
 	Vector3(0.0, 1.0, 0.0),  	// Top
 	Vector3(0.0, -1.0, 0.0),  	// Bottom
 	Vector3(0.0, 0.0, 1.0),  	// North
-	Vector3(0.0, 1.0, -1.0),  	// South
+	Vector3(0.0, 0.0, -1.0),  	// South
 	Vector3(1.0, 0.0, 0.0),  	// East
 	Vector3(-1.0, 0.0, 0.0)  	// West
 ];
