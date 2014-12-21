@@ -12,7 +12,14 @@ public var sl : Sublayer;
 // Blocks
 //----------------------------------------
 public static var numBlocks : int = 64;
-public var blockList = new Tile[numBlocks];
+public var blockList = new Block[numBlocks];
+
+
+//----------------------------------------
+// Characters
+//----------------------------------------
+public static var numCharacters : int = 8;
+public var characterList = new Character[numCharacters];
 
 //BUTTONS
 
@@ -34,12 +41,12 @@ function onInstantiate()
 
 
 	// Blocks
-	var blockPrefab : GameObject = Resources.Load("Tile");
+	var blockPrefab : GameObject = Resources.Load("Block");
 
 	for( var b : int = 0; b < numBlocks; b++ )
 	{
 		var blockGameObject : GameObject = GameObject.Instantiate( blockPrefab, Vector3.zero, blockPrefab.transform.rotation );
-		var block : Tile = blockGameObject.GetComponent( Tile );
+		var block : Block = blockGameObject.GetComponent( Block );
 		blockList[b] = block;
 		block.onInstantiate();
 	}
@@ -55,7 +62,24 @@ function onInstantiate()
 function sublayerGameUpdate()
 {
 
+
+
 }
+
+
+
+//----------------------------------------
+// Characters
+//----------------------------------------
+
+
+// What faces can character move to?
+// highlight those faces
+// if highlighted faces are clicked, move chacter to that space and orientation
+
+
+// Any block with a face facing current coordinates.
+// Any block adjacent to the piece's standing block.
 
 
 
@@ -135,7 +159,7 @@ function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
 			continue; 
 
 		// Initialize new block
-		var block : Tile = getFreeBlock();
+		var block : Block = getFreeBlock();
 
 		block.onInitialize( blockCoordinates );
 
@@ -151,7 +175,7 @@ function getBlockAtCoordinates( _coordinates )
 	for( var b : int = 0; b < numBlocks; b++ )
 	{
 
-		var block : Tile = blockList[b];
+		var block : Block = blockList[b];
 
 		if( block.gameObject.activeSelf == false )
 			continue;
@@ -173,7 +197,7 @@ function getFreeBlock()
 	for( var b : int = 0; b < numBlocks; b++ )
 	{
 
-		var block : Tile = blockList[b];
+		var block : Block = blockList[b];
 
 		if( block.gameObject.activeSelf == false )
 		{
