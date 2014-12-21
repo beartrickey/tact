@@ -94,6 +94,8 @@ function onTwoTouchDownInside()
 function onTouchUpInside()
 {
 
+    Debug.Log( "onTouchUpInside" );
+
 	//set these to off to prevent rolloff from being called later
     wasDownLastFrame = false;
     isDown = false;

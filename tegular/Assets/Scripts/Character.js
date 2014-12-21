@@ -14,41 +14,77 @@ function onInstantiate()
 function onInitialize( _characterCoordinates : Vector3, _down : Vector3 )
 {
 
+	gameObject.SetActive( true );
+
 	coordinates = _characterCoordinates;
 	down = _down;
 
 	// Position
-	gameObject.SetActive( true );
-	gameObject.transform.position = (_characterCoordinates * Tile.blockSize) + (down * 0.5);
+	setPositionForCoordinates();
 
 	// Rotation
+	setRotationForDownVector();
+
+}
+
+
+function setPositionForCoordinates()
+{
+
+	gameObject.transform.position = (coordinates * Tile.blockSize) + (down * 0.5);
+
+}
+
+
+function setRotationForDownVector()
+{
+
 	// Up
-	if( _down == Block.facingList[1] )
+	if( down == Block.facingList[1] )
 		gameObject.transform.eulerAngles = Vector3( 0.0, 0.0, 0.0 );
 
 	// Down
-	if( _down == Block.facingList[0] )
+	if( down == Block.facingList[0] )
 		gameObject.transform.eulerAngles = Vector3( 180.0, 0.0, 0.0 );
 
 	// North
-	if( _down == Block.facingList[3] )
+	if( down == Block.facingList[3] )
 		gameObject.transform.eulerAngles = Vector3( 90.0, 0.0, 0.0 );
 
 	// South
-	if( _down == Block.facingList[2] )
+	if( down == Block.facingList[2] )
 		gameObject.transform.eulerAngles = Vector3( -90.0, 0.0, 0.0 );
 
 	// East
-	if( _down == Block.facingList[5] )
-		gameObject.transform.eulerAngles = Vector3( 0.0, 0.0, 90.0 );
+	if( down == Block.facingList[5] )
+		gameObject.transform.eulerAngles = Vector3( 0.0, 0.0, -90.0 );
 
 	// West
-	if( _down == Block.facingList[4] )
-		gameObject.transform.eulerAngles = Vector3( 0.0, 0.0, -90.0 );
+	if( down == Block.facingList[4] )
+		gameObject.transform.eulerAngles = Vector3( 0.0, 0.0, 90.0 );
+
+}
+
+
+function moveToNewFace( _face : Face )
+{
+
+	coordinates = _face.parentBlock.coordinates + _face.facing;
+	down = _face.facing * -1.0;
+
+	setPositionForCoordinates();
+	setRotationForDownVector();
+
+	SublayerGameDelegate.instance.setMovableFacesForCharacter( this );
+
 }
 
 
 function characterUpdate()
 {
 
+
+
 }
+
+

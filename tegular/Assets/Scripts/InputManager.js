@@ -5,8 +5,10 @@
 public static var keyboardEnabled : boolean = true;
 public static var instance : InputManager;
 
+public var touchBeganPosition = new Vector3[2];
 public var lastTouchPosition = new Vector2[2];
 public var currentTouchPosition = new Vector2[2];
+public var touchDownFrames : int = 0;
 
 public var cameraSwivel : GameObject = null;
 
@@ -26,6 +28,10 @@ function Update(){
 	// Copy touch position
 	lastTouchPosition[0] = currentTouchPosition[0];
 	lastTouchPosition[1] = currentTouchPosition[1];
+
+	// Increase townDownFrames
+	if( touchDownFrames > 0 )
+		touchDownFrames++;
 	
 	
 	switch( Application.platform )
@@ -150,7 +156,9 @@ function mouseBegan(){
 
 	var ray : Ray = Camera.main.ScreenPointToRay( Input.mousePosition );
 
-	lastTouchPosition[0] = currentTouchPosition[0] = Input.mousePosition;
+	lastTouchPosition[0] = currentTouchPosition[0] = touchBeganPosition[0] = Input.mousePosition;
+
+	touchDownFrames = 1;
 
 	// checkForButtonTouchDownInside( ray, 0 );
 	
@@ -180,11 +188,20 @@ function mouseMoved(){
 
 
 
-function mouseEnded(){
+function mouseEnded()
+{
 	
+	Debug.Log( "mouseEnded" );
 	var ray : Ray = Camera.main.ScreenPointToRay( Input.mousePosition );
 	
-	// checkForButtonTouchUpInside( ray );
+	// Only check for button clicks if the mouse was clicked down and up rapidly
+	if( touchDownFrames < 10 && (currentTouchPosition[0] - lastTouchPosition[0]).magnitude < 10.0 )
+	{
+		checkForButtonTouchUpInside( ray );
+	}
+
+	// Reset touchDownFrames
+	touchDownFrames = 0;
 	
 }
 
@@ -289,6 +306,7 @@ function checkForButtonRolloverRolloff( _ray : Ray ){
 
 function checkForButtonTouchUpInside( _ray : Ray ){
 
+	Debug.Log( "checkForButtonTouchUpInside" );
 	var buttonScript : ButtonScript = checkForButtonCollision( _ray );
 	
 	
@@ -320,7 +338,7 @@ function checkForButtonCollision( _ray : Ray ) : ButtonScript{
 		return;
 	
 	
-	// Debug.Log( "hitList.length" + hitList.length );
+	Debug.Log( "hitList.length" + hitList.length );
 	
 	//loop through hit list for any buttons on screen
 	var closestButton : ButtonScript = null;

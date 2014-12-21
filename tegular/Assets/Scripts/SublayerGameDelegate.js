@@ -58,7 +58,7 @@ function onInstantiate()
 	character.onInitialize( Vector3(0.0, 1.0, 1.0), Vector3(0.0, 0.0, -1.0) );
 
 	// TEST HACK
-	getMovableFacesForCharacter( character );
+	setMovableFacesForCharacter( character );
 
 }
 
@@ -200,10 +200,34 @@ function getCharacterStandingFace( _character : Character )
 }
 
 
-function getMovableFacesForCharacter( _character : Character )
+function setAllFacesToUnmovable()
+{
+	for( var b : int = 0; b < numBlocks; b++ )
+	{
+
+		var block : Block = blockList[b];
+
+		if( block.gameObject.activeSelf == false )
+			continue;
+
+		for( var f : int = 0; f < 6; f++ )
+		{
+			block.faceList[f].setMovable( false );
+		}
+
+	};
+}
+
+
+function setMovableFacesForCharacter( _character : Character )
 {
 
+	// Get character standing face
 	var characterStandingFace : Face = getCharacterStandingFace( _character );
+
+	// Reset all faces
+	setAllFacesToUnmovable();
+
 	var faceList = new Array();
 
 	for( var b : int = 0; b < numBlocks; b++ )
@@ -221,7 +245,7 @@ function getMovableFacesForCharacter( _character : Character )
 	for( var f : int = 0; f < faceList.length; f++ )
 	{
 		var face : Face = faceList[f];
-		face.gameObject.renderer.material.SetColor( "_Color", Color(0.75, 0.75, 1.0, 1.0) );
+		face.setMovable( true );
 	}
 
 }
