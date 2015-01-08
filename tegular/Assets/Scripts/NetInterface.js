@@ -9,39 +9,14 @@ function Start()
 
 }
 
+
 function loadStageData()
 {
 
-	var url : String = "http://127.0.0.1:8000/test/";
+	// SimpleJson example
+	// 	var myBool : boolean = jsonObject["true"].AsBool;
+	// 	var myInt : int = jsonObject["five"].AsFloat;
 
-	var www : WWW = new WWW (url);
-
-	// Wait for download to complete
-	yield www;
-
-	Debug.Log(www.text);
-
-	var jsonObject = JSON.Parse(www.text);
-
-	//
-	var myBool : boolean = jsonObject["true"].AsBool;
-	var myInt : int = jsonObject["five"].AsFloat;
-
-	if( myBool == true )
-	{
-		Debug.Log("myBool is true");
-	}
-
-	if( myInt == 5 )
-	{
-		Debug.Log("myInt is 5");
-	}
-
-}
-
-
-function arrangeBlocksFromData()
-{
 	var url : String = "http://127.0.0.1:8000/test/";
 
 	var www : WWW = new WWW (url);
@@ -51,10 +26,12 @@ function arrangeBlocksFromData()
 
 	var jsonObject = JSON.Parse(www.text);
 
-	for( var b : int = 0; b < jsonObject.Count; b++ )
+	// Block data
+	var blockDataList = jsonObject["block_data_list"];
+	for( var b : int = 0; b < blockDataList.Count; b++ )
 	{
 
-		var blockData = jsonObject[b];
+		var blockData = blockDataList[b];
 
 		// Coordinates
 		var coordinateArray = blockData["coordinates"];
@@ -91,12 +68,14 @@ function arrangeBlocksFromData()
 	}
 
 	// Turn off hidden faces
-	SublayerGameDelegate.instance.turnOffHiddenFaces();
+	// SublayerGameDelegate.instance.turnOffHiddenFaces();
 
 	// Set Character Positions
-	SublayerGameDelegate.instance.character.onInitialize( Vector3(0.0, 1.0, 1.0), Vector3(0.0, 0.0, -1.0) );
+	// SublayerGameDelegate.instance.character.onInitialize( Vector3(0.0, 1.0, 1.0), Vector3(0.0, 0.0, -1.0) );
 
 	// TEST HACK
-	SublayerGameDelegate.instance.setMovableFacesForCharacter( SublayerGameDelegate.instance.character );
+	// SublayerGameDelegate.instance.setMovableFacesForCharacter( SublayerGameDelegate.instance.character );
 
 }
+
+

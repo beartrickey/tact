@@ -41,12 +41,12 @@ function setMovable( _movable : boolean )
 function faceClicked( _buttonScript : ButtonScript )
 {
 
-	Debug.Log( "faceClicked" );
+	// Debug.Log( "faceClicked" );
 
-	if( movable )
-	{
-		SublayerGameDelegate.instance.character.moveToNewFace( this );
-	}
+	// if( movable )
+	// {
+	// 	SublayerGameDelegate.instance.character.moveToNewFace( this );
+	// }
 
 }
 

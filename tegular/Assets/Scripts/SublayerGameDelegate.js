@@ -52,7 +52,7 @@ function onInstantiate()
 		block.onInstantiate();
 	}
 
-	GameManager.instance.netInterface.arrangeBlocksFromData();
+	GameManager.instance.netInterface.loadStageData();
 
 }
 
@@ -90,381 +90,6 @@ function sublayerGameUpdate()
 // Blocks
 //----------------------------------------
 
-public static var shipBlockData = [
-
-	// Row 1
-	{
-		"coordinates": [-1.0, 0.0, 0.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-	{
-		"coordinates": [0.0, 0.0, 0.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-	{
-		"coordinates": [0.0, 1.0, 0.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/window",
-			"Textures/window",
-			"Textures/window",
-			"Textures/window",
-			"Textures/window"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, 0.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-
-	// Row 2
-	{
-		"coordinates": [-1.0, 0.0, 1.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-	{
-		"coordinates": [0.0, 0.0, 1.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, 1.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-
-	// Row 3
-	{
-		"coordinates": [-1.0, 0.0, -1.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-	{
-		"coordinates": [0.0, 0.0, -1.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, -1.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-
-	// Row 4
-	{
-		"coordinates": [-1.0, 0.0, -2.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/thruster",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, -2.0],
-		"textures": [
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/panel",
-			"Textures/thruster",
-			"Textures/panel",
-			"Textures/panel"
-		]
-	}
-
-];
-
-public static var asteroidBlockData = [
-
-	// Row 1
-	{
-		"coordinates": [-1.0, 0.0, 0.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [0.0, 0.0, 0.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [0.0, -1.0, 0.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [0.0, 1.0, 0.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, 0.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, 1.0, 0.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [2.0, 1.0, 0.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-
-	// Row 2
-	{
-		"coordinates": [-1.0, 0.0, 1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [-2.0, 0.0, 1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [0.0, 0.0, 1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, 1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, -1.0, 1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-
-	// Row 3
-	{
-		"coordinates": [-1.0, 0.0, -1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [0.0, 0.0, -1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [0.0, -1.0, -1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, -1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, 1.0, -1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, 2.0, -1.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-
-	// Row 4
-	{
-		"coordinates": [-1.0, 0.0, -2.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	},
-	{
-		"coordinates": [1.0, 0.0, -2.0],
-		"textures": [
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid",
-			"Textures/asteroid"
-		]
-	}
-
-];
 
 
 function arrangeBlocksFromData( _data : Boo.Lang.Hash[] )
@@ -535,27 +160,27 @@ function turnOffHiddenFaces()
 }
 
 
-function getCharacterStandingFace( _character : Character )
-{
+// function getCharacterStandingFace( _character : Character )
+// {
 
-	var faceList = new Array();
+// 	var faceList = new Array();
 
-	for( var b : int = 0; b < numBlocks; b++ )
-	{
+// 	for( var b : int = 0; b < numBlocks; b++ )
+// 	{
 
-		var block : Block = blockList[b];
+// 		var block : Block = blockList[b];
 
-		if( block.gameObject.activeSelf == false )
-			continue;
+// 		if( block.gameObject.activeSelf == false )
+// 			continue;
 
-		faceList = faceList.Concat( block.getFacesNearPoint( character.gameObject.transform.position, 0.5 ) );
+// 		faceList = faceList.Concat( block.getFacesNearPoint( character.gameObject.transform.position, 0.5 ) );
 
-	};
+// 	};
 
-	// We should only have one element in the faceList at the end
-	return faceList[0];
+// 	// We should only have one element in the faceList at the end
+// 	return faceList[0];
 
-}
+// }
 
 
 function setAllFacesToUnmovable()
@@ -577,36 +202,36 @@ function setAllFacesToUnmovable()
 }
 
 
-function setMovableFacesForCharacter( _character : Character )
-{
+// function setMovableFacesForCharacter( _character : Character )
+// {
 
-	// Get character standing face
-	var characterStandingFace : Face = getCharacterStandingFace( _character );
+// 	// Get character standing face
+// 	var characterStandingFace : Face = getCharacterStandingFace( _character );
 
-	// Reset all faces
-	setAllFacesToUnmovable();
+// 	// Reset all faces
+// 	setAllFacesToUnmovable();
 
-	var faceList = new Array();
+// 	var faceList = new Array();
 
-	for( var b : int = 0; b < numBlocks; b++ )
-	{
+// 	for( var b : int = 0; b < numBlocks; b++ )
+// 	{
 
-		var block : Block = blockList[b];
+// 		var block : Block = blockList[b];
 
-		if( block.gameObject.activeSelf == false )
-			continue;
+// 		if( block.gameObject.activeSelf == false )
+// 			continue;
 
-		faceList = faceList.Concat( block.getAdjacentFaces( characterStandingFace ) );
+// 		faceList = faceList.Concat( block.getAdjacentFaces( characterStandingFace ) );
 
-	};
+// 	};
 
-	for( var f : int = 0; f < faceList.length; f++ )
-	{
-		var face : Face = faceList[f];
-		face.setMovable( true );
-	}
+// 	for( var f : int = 0; f < faceList.length; f++ )
+// 	{
+// 		var face : Face = faceList[f];
+// 		face.setMovable( true );
+// 	}
 
-}
+// }
 
 
 
