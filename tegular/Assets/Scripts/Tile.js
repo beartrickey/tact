@@ -1,9 +1,8 @@
 ﻿#pragma strict
 
 public static var tileWidth : float = 1.0;
-public static var heightIncrement : float = 0.5;
-public var height : float = 0.0;
-public var coordinates : Vector2;
+public static var heightIncrement : float = 1.0;
+public var coordinates : Vector3;
 public var meshCollider : MeshCollider = null;
 public var mesh : Mesh = null;
 
@@ -15,6 +14,12 @@ function onInstantiate()
 	mesh = gameObject.GetComponent( MeshFilter ).mesh;
 	meshCollider = gameObject.GetComponent( MeshCollider );
 
+
+	// Set button touch up inside function
+	var buttonScript : ButtonScript = gameObject.GetComponent( ButtonScript );
+	SublayerGameDelegate.instance.sl.addButton( buttonScript );
+	buttonScript.onTouchUpInsideDelegate = tileClicked;
+
 }
 
 
@@ -22,16 +27,40 @@ function onInitialize( _tileCoordinates : Vector3 )
 {
 
 	gameObject.SetActive( true );
-	gameObject.transform.position = _tileCoordinates * tileWidth;
+
+	// Position
+	gameObject.transform.position = Vector3(
+		_tileCoordinates.x * tileWidth,
+		0.0,
+		_tileCoordinates.z * tileWidth
+	);
+
 	coordinates = _tileCoordinates;
 
+	arrangeVerts();
+
 }
+
+
+
+function tileClicked( _buttonScript : ButtonScript )
+{
+
+	Debug.Log( "tileClicked" );
+
+	// if( movable )
+	// {
+	// 	SublayerGameDelegate.instance.character.moveToNewFace( this );
+	// }
+
+}
+
 
 
 function tileUpdate()
 {
 
-	arrangeVerts();
+	
 
 }
 
@@ -44,7 +73,7 @@ function arrangeVerts(){
 	////////////////////////////////////
 	var newVertices : Vector3[] = mesh.vertices;
 	
-	var topVertexHeight : float = height * heightIncrement;
+	var topVertexHeight : float = coordinates.y * heightIncrement;
 
 	// SIDE 1
 	newVertices[0].y = 0.0;
@@ -88,47 +117,66 @@ function arrangeVerts(){
 	////////////////////////////////////
 	var newColors : Color[] = new Color[newVertices.Length];
 
-	var topLightGreyValue : float = 0.5 + (height * 0.1);
-	var topLightGrey : Color = Color(topLightGreyValue, topLightGreyValue, topLightGreyValue, 1.0);
-	var grey : Color = Color(0.5, 0.5, 0.5, 1.0);
-	var darkGrey : Color = Color(0.25, 0.25, 0.25, 1.0);
-	var black : Color = Color(0.0, 0.0, 0.0, 1.0);
+	var topColorValue : float = 0.5 + (coordinates.y * 0.1);
+	var topColor : Color = Color(topColorValue, topColorValue, topColorValue, 1.0);
+	var sideOneColor : Color = Color(0.5, 0.5, 0.5, 1.0);
+	var sideTwoColor : Color = Color(0.25, 0.25, 0.25, 1.0);
+	var bottomColor : Color = Color(0.0, 0.0, 0.0, 1.0);
+
+	// var topColor : Color = Color(0.0, 0.0, 0.0, 1.0);
+	// var sideOneColor : Color = Color(0.5, 0.25, 0.125, 1.0);
+	// var sideTwoColor : Color = Color(0.25, 0.125, 0.05, 1.0);
+	// var bottomColor : Color = Color(0.0, 0.0, 0.0, 1.0);
+
+	// if( coordinates.y == 1.0 )
+	// {
+	// 	topColor = Color(0.0, 1.0, 0.0, 1.0);
+	// }
+	// else if( coordinates.y == 2.0 )
+	// {
+	// 	topColor = Color(1.0, 1.0, 0.0, 1.0);
+	// }
+	// else if( coordinates.y == 3.0 )
+	// {
+	// 	topColor = Color(1.0, 0.0, 0.0, 1.0);
+	// }
+
 
 	// SIDE 1
-	newColors[0] = darkGrey;
-	newColors[1] = darkGrey;
-	newColors[2] = darkGrey;
-	newColors[3] = darkGrey;
+	newColors[0] = sideOneColor;
+	newColors[1] = sideOneColor;
+	newColors[2] = sideOneColor;
+	newColors[3] = sideOneColor;
 
 	// SIDE 2
-	newColors[6] = grey;
-	newColors[7] = grey;
-	newColors[10] = grey;
-	newColors[11] = grey;
+	newColors[6] = sideTwoColor;
+	newColors[7] = sideTwoColor;
+	newColors[10] = sideTwoColor;
+	newColors[11] = sideTwoColor;
 	
 	// TOP
-	newColors[4] = topLightGrey;
-	newColors[5] = topLightGrey;
-	newColors[8] = topLightGrey;
-	newColors[9] = topLightGrey;
+	newColors[4] = topColor;
+	newColors[5] = topColor;
+	newColors[8] = topColor;
+	newColors[9] = topColor;
 
 	// BOTTOM
-	newColors[12] = grey;
-	newColors[13] = grey;
-	newColors[14] = grey;
-	newColors[15] = grey;
+	newColors[12] = bottomColor;
+	newColors[13] = bottomColor;
+	newColors[14] = bottomColor;
+	newColors[15] = bottomColor;
 
 	// SIDE 3
-	newColors[16] = grey;
-	newColors[17] = grey;
-	newColors[18] = grey;
-	newColors[19] = grey;
+	newColors[16] = sideOneColor;
+	newColors[17] = sideOneColor;
+	newColors[18] = sideOneColor;
+	newColors[19] = sideOneColor;
 
 	// SIDE 4
-	newColors[20] = darkGrey;
-	newColors[21] = darkGrey;
-	newColors[22] = darkGrey;
-	newColors[23] = darkGrey;
+	newColors[20] = sideTwoColor;
+	newColors[21] = sideTwoColor;
+	newColors[22] = sideTwoColor;
+	newColors[23] = sideTwoColor;
 	
 	// Recalculate
 	mesh.colors = newColors;

@@ -13,23 +13,14 @@ regardless of whether or not the frame has been resolved or not.
 Both server and client know how to parse that json object.
 
 
-What to do about two units that want to enter same space during a frame?
-    -Stronger/faster unit takes the space?
-    -Units grapple on space?
-    -Neither can enter?
-
 Futures investment of moves?
     -Players who lock in certain moves N frames in advance get some kind of bonus?
-
-Weapons / Item implementation
-
-Character creation screen
 
 Room/Matching system
 
 Global variables in database
 
-Learn fixtures
+Learn migrations
 
 Game start
     -initial character positioning
@@ -47,7 +38,6 @@ Daily aspect
     -different days of the week have different character bonuses/effects
 
 
-
 Client parses generic battle dictionary and makes relevant objects
     relevant objects persist in js memory
     relevant objects are flexible enough to hold data that changes from frame to frame (hp, row, col, etc)
@@ -62,5 +52,67 @@ When a frame is scrubbed over, data from the frame object is parsed and shown vi
 
 Client sends planned moves to server. Server validates the moves are plausible
 Plausible moves are saved and then resolved with all other moves at the cycle deadline
+
+Normal operation:
+Client: download terrain
+Client: download frame data (characters, positions, moves, etc)
+Client: select frame
+Client: select character, Server: serve movable spaces
+Client: select move location, Server: validate and commit move
+Server: update and send back all commit frames (past and future), Client: update frames locally
+
+Redoing old command:
+Client: select frame
+Client: select character, Server: show current committed action
+Client: select new action, Server: recursively update/remove future actions that depend on previous action
+Server: update and send back all commit frames (past and future), Client: update frames locally
+
+
+Battleframe information dict example (What actually happened)
+{
+
+    "forces": [
+        {
+            "owner": 0,
+            "amount": 4,
+            "coordinates": [0, 1, -4],
+            "creators": [
+                {
+                    "owner": 0,
+                    "amount": 2
+                    "from": [0, 2, -5],
+                },
+                {
+                    "owner": 0,
+                    "amount": 2
+                    "from": [0, 2, -3],
+                }
+            ]
+        }
+    ]
+
+}
+
+
+PlayerCommit information dict example (What players want to happen)
+{
+
+    "actions": [
+        {
+            "from": [0, 2, -5],
+            "to": [0, 1, -4],
+            "amount": 2
+        },
+        {
+            "from": [0, 2, -3],
+            "to": [0, 1, -4],
+            "amount": 2
+        },
+    ]
+
+}
+
+
+
 
 

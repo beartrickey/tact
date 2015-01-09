@@ -9,35 +9,43 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.serializers import serialize
 
 
-from battle_machine import make_new_battle, make_battle_dictionary, move_character, use_item
-from models import Battle, TerrainMap, Character
+from battle_machine import make_new_battle, make_battle_dictionary
+from models import Battle, TerrainMap, Player
 
 
-@login_required
-def battle(_request):
+# @login_required
+def battle(request):
 
+    battle = None
     try:
-        player = _request.user.player
-        new_battle = Battle.objects.filter(
-            characters__in=_request.user.player.characters.all()
-        ).distinct()[0]
-        # choose_active_character(new_battle)
-    except IndexError:
-        new_battle = make_new_battle(_character_list=None)
+        battle = Battle.objects.get(
+            pk=1
+        )
+    except Battle.DoesNotExist:
+        player_one = Player.objects.get(pk=1)
+        player_two = Player.objects.get(pk=2)
 
-    return render(
-        _request,
-        'tact_app/game.html',
-        {
-            'battle_id': new_battle.pk,
-        }
-    )
+        battle = make_new_battle(
+            player_one=player_one,
+            player_two=player_two,
+            cycle_duration=1440     # 24 hours
+        )
+
+    stage_data = {
+        "tile_data_list": json.loads(battle.terrain_map.map_data)
+    }
+    my_json = json.dumps(stage_data)
+
+    http_response = HttpResponse(my_json, content_type="application/json", status=200)
+    # http_response['Access-Control-Allow-Origin'] = "*"
+
+    return http_response
 
 
 @login_required
-def get_battle_dictionary(_request):
+def get_battle_dictionary(request):
 
-    battle_id = _request.GET.get('battle_id')
+    battle_id = request.GET.get('battle_id')
 
     battle, battle_dictionary = make_battle_dictionary(battle_id)
 
@@ -50,22 +58,21 @@ def get_battle_dictionary(_request):
 
 
 @login_required
-def perform_action(_request):
+def perform_action(request):
 
     # battle
-    battle_id = _request.GET.get('battle_id')
+    battle_id = request.GET.get("battle_id")
 
     battle, battle_dictionary = make_battle_dictionary(battle_id)
 
-    action_dictionary = json.loads(_request.GET.get('action_dictionary'))
+    action_dictionary = json.loads(request.GET.get("action_dictionary"))
 
     #process action
-    if action_dictionary.get('action') == 'move':
+    if action_dictionary.get("action") == "move":
         move_character(
-            _character_id=action_dictionary.get('character'),
-            _column=action_dictionary.get('column'),
-            _row=action_dictionary.get('row'),
-            _battle=battle,
+            column=action_dictionary.get("column"),
+            row=action_dictionary.get("row"),
+            battle=battle,
         )
 
 

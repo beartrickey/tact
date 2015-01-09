@@ -1,6 +1,9 @@
+from datetime import datetime
+import random
+
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+
 
 # Create your models here.
 
@@ -14,17 +17,35 @@ class Battle(models.Model):
         All of the settings for a single play session
     """
 
-    terrain_map = models.ForeignKey('TerrainMap')
+    player_one = models.ForeignKey(
+        to="Player",
+        related_name="player_one_battles"
+    )
 
-    start_date_time = models.DateTimeField(default=datetime.now, blank=True)
+    player_two = models.ForeignKey(
+        to="Player",
+        related_name="player_two_battles"
+    )
 
-    current_frame = models.IntegerField(default=1)
+    terrain_map = models.ForeignKey(
+        to="TerrainMap"
+    )
 
-    frames_per_cycle = models.IntegerField(default=1)
+    start_date_time = models.DateTimeField(
+        default=datetime.now,
+        null=True,
+        blank=True
+    )
+
+    current_frame = models.IntegerField(
+        default=1
+    )
 
     # required. Number of minutes a player has each round to take turns for all characters.
     # The deadline to decide moves is determined by this.
-    cycle_duration = models.IntegerField(default=0)
+    cycle_duration = models.IntegerField(
+        default=0
+    )
 
     def return_battle_history(self):
         pass
@@ -36,33 +57,56 @@ class Battle(models.Model):
         return str(self.__unicode__())
 
 
-# class GameFrame(models.Model):
-#     """
-#     """
-#
-#     battle
-#     frame_data - dictionary of all actual events that happened that frame
-
-# class PlayerMove
-#
-#     battle
-#     player
-#     frame_data - dictionary of all planned moves made by a certain player. should resemble frame_data dict of GameFrame
-
-
 class TerrainMap(models.Model):
     """
         A string of text, delimited by |, that represents the
         terrain type for each block in a map.
         Starts at the top left corner of the map and ends
-        at the bottom right. Assumes a grid of 16x9
+        at the bottom right. Assumes a grid of 10x10
     """
 
-    map_data = models.CharField(max_length='2048')
+    map_data = models.CharField(max_length="2048")
+
+    @staticmethod
+    def make_random_map():
+
+        terrain_data_list = []
+
+        for column_number in range(-4, 5):
+            for row_number in range(-4, 5):
+                tile_data = [
+                    column_number,
+                    random.randint(1, 3),
+                    row_number,
+                ]
+                terrain_data_list.append(tile_data)
+
+        return terrain_data_list
+
+
+class BattleFrame(models.Model):
+    """
+        Stores information about historic (resolved) frames for a battle
+    """
+
+    battle = models.ForeignKey(
+        to="Battle",
+        related_name="frames"
+    )
+
+    information_dictionary = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    # The frame number this information refers to
+    number = models.IntegerField(
+        default=0
+    )
 
 
 ###########################################
-# Players, Characters, and Item Data
+# Players
 ###########################################
 
 
@@ -73,7 +117,7 @@ class Player(models.Model):
         are fighting in different battles at the same time.
     """
 
-    user = models.OneToOneField(User, related_name='player')  # should this be a one-to-one?
+    user = models.OneToOneField(User, related_name='player')
 
     def __unicode__(self):
         return u'{0}, {1}'.format(self.user.last_name, self.user.first_name)
@@ -82,76 +126,31 @@ class Player(models.Model):
         return str(self.__unicode__())
 
 
-class MapNodeClass(models.Model):
+class PlayerCommit(models.Model):
     """
-        Anything that can appear on the map.
-        Displays as a single ascii character with a background color
-        and font color. Covers both living Characters and inanimate
-        Items.
+        Stores information about a player's committed choices for future (unresolved) frames
     """
 
-    name = models.CharField(max_length=16)
+    battle = models.ForeignKey(
+        to="Battle",
+        related_name="commits"
+    )
 
-    column = models.IntegerField(default=0)
+    player = models.ForeignKey(
+        to="Player",
+        related_name="commits"
+    )
 
-    row = models.IntegerField(default=0)
+    information_dictionary = models.TextField(
+        blank=True,
+        null=True
+    )
 
-    facing = models.IntegerField(default=0)
-
-    font_color = models.CharField(max_length=4, blank=True)  # ex '#rgb'
-
-    background_color = models.CharField(max_length=4, blank=True)  # ex '#rgb'
-
-    ascii_character = models.CharField(max_length=1, blank=True)  # ex '@'
-
-    class Meta:
-        abstract = True
-
-    def __unicode__(self):
-        return u'{0}'.format(self.name)
-
-    def __str__(self):
-        return str(self.__unicode__())
+    # The frame number this information refers to
+    number = models.IntegerField(
+        default=0
+    )
 
 
-class Character(MapNodeClass):
-    """
-        Stores information about PCs and NPCs.
-        NPCs will have a player field of null and are controlled by game logic.
-        Inventory is stored via the related name 'items' in the Item model
-    """
 
-    battle = models.ForeignKey('Battle', related_name='characters', null=True, blank=True)
-
-    player = models.ForeignKey('Player', related_name='characters', null=True, blank=True)
-
-    strength = models.IntegerField(default=0)
-
-    round = models.IntegerField(default=0)
-
-
-class Item(MapNodeClass):
-    """
-    A specific item a character can hold.
-    """
-
-    character = models.ForeignKey('Character', related_name='items')
-
-    attributes = models.ManyToManyField('ItemAttribute', related_name='items')
-
-
-class ItemAttribute(models.Model):
-    """
-    The attributes of an item.
-    For example 'does damage', or 'fiery'
-    """
-
-    name = models.CharField(max_length=16)
-
-    value = models.IntegerField(default=0)
-
-    def __unicode__(self):
-        return u'{0}, {1}'.format(self.name, self.value)
-
-    def __str__(self):
-        return str(self.__unicode__())
+    
