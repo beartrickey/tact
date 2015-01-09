@@ -40,6 +40,17 @@ function onInstantiate()
 	// sl.addButton( startButton );
 	// startButton.onTouchDownInsideDelegate = startButtonPressed;
 
+	// Character
+	var characterPrefab : GameObject = Resources.Load("Character");
+
+	for( var c : int = 0; c < numCharacters; c++ )
+	{
+		var characterGameObject : GameObject = GameObject.Instantiate( characterPrefab, Vector3.zero, characterPrefab.transform.rotation );
+		var character : Character = characterGameObject.GetComponent( Character );
+		characterList[c] = character;
+		character.onInstantiate();
+	}
+
 
 	// Blocks
 	var blockPrefab : GameObject = Resources.Load("Tile");
@@ -72,6 +83,27 @@ function sublayerGameUpdate()
 //----------------------------------------
 // Characters
 //----------------------------------------
+
+function getFreeCharacter()
+{
+
+	for( var c : int = 0; c < numCharacters; c++ )
+	{
+
+		var character : Character = characterList[c];
+
+		if( character.gameObject.activeSelf == false )
+		{
+
+			return character;
+
+		}
+		
+	}
+
+	return null;
+
+}
 
 
 // What faces can character move to?

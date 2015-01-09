@@ -16,27 +16,42 @@ from models import Battle, TerrainMap, Player
 # @login_required
 def battle(request):
 
-    battle = None
-    try:
-        battle = Battle.objects.get(
-            pk=1
-        )
-    except Battle.DoesNotExist:
+    battle_list = Battle.objects.all().order_by('-pk')
+
+    if any(battle_list):
+        latest_battle = Battle.objects.all().order_by('-pk')[0]
+    else:
         player_one = Player.objects.get(pk=1)
         player_two = Player.objects.get(pk=2)
 
-        battle = make_new_battle(
+        latest_battle = make_new_battle(
             player_one=player_one,
             player_two=player_two,
             cycle_duration=1440     # 24 hours
         )
 
+    terrain_data_list = json.loads(latest_battle.terrain_map.map_data)
+    battle_frame_query_set = latest_battle.frames.all().order_by("number")
+    battle_frame_list = []
+
+    for battle_frame in battle_frame_query_set:
+        battle_frame_list.append(
+            {
+                "information_dictionary": json.loads(battle_frame.information_dictionary),
+                "number": battle_frame.number
+            }
+        )
+
+    # Build final dictionary
     stage_data = {
-        "tile_data_list": json.loads(battle.terrain_map.map_data)
+        "terrain_data_list": terrain_data_list,
+        "battle_frame_list": battle_frame_list
     }
+
     my_json = json.dumps(stage_data)
 
     http_response = HttpResponse(my_json, content_type="application/json", status=200)
+
     # http_response['Access-Control-Allow-Origin'] = "*"
 
     return http_response

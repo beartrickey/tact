@@ -24,14 +24,16 @@ function loadTerrainData()
 	// Wait for download to complete
 	yield www;
 
+	Debug.Log(www.text);
+
 	var jsonObject = JSON.Parse(www.text);
 
 	// Block data
-	var tileDataList = jsonObject["tile_data_list"];
-	for( var b : int = 0; b < tileDataList.Count; b++ )
+	var tileDataList = jsonObject["terrain_data_list"];
+	for( var t : int = 0; t < tileDataList.Count; t++ )
 	{
 
-		var tileData = tileDataList[b];
+		var tileData = tileDataList[t];
 
 		// Coordinates
 		var coordinateArray = tileData;
@@ -46,6 +48,33 @@ function loadTerrainData()
 		var tile : Tile = SublayerGameDelegate.instance.getFreeBlock();
 
 		tile.onInitialize( tileCoordinates );
+
+	}
+
+	// Battle frame data
+	var battleFrameList = jsonObject["battle_frame_list"];
+	for( var b : int = 0; b < battleFrameList.Count; b++ )
+	{
+
+		var battleFrame = battleFrameList[b];
+
+		Debug.Log(battleFrame["number"].AsInt);
+
+		for( var f : int = 0; f < battleFrame["information_dictionary"]["forces"].Count; f++ )
+		{
+
+			var forceData = battleFrame["information_dictionary"]["forces"][f];
+
+			var characterCoordinates : Vector3 = Vector3(
+				forceData["coordinates"][0].AsFloat,
+				forceData["coordinates"][1].AsFloat,
+				forceData["coordinates"][2].AsFloat
+			);
+			
+			var character : Character = SublayerGameDelegate.instance.getFreeCharacter();
+			character.onInitialize( characterCoordinates );
+
+		}
 
 	}
 
