@@ -312,4 +312,25 @@ function getFreeBlock()
 
 
 
+function resetBlockColors()
+{
+
+	for( var b : int = 0; b < numBlocks; b++ )
+	{
+
+		var block : Tile = blockList[b];
+
+		if( block.gameObject.activeSelf == false )
+			continue;
+
+		block.arrangeVerts(false);
+		
+	}
+
+	return null;
+
+}
+
+
+
 

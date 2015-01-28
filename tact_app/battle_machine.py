@@ -31,6 +31,28 @@ def get_height_at_coordinates(terrain_data_list, x, z):
     return None
 
 
+def point_inside_block(terrain_data_list, point):
+
+    for data in iter(terrain_data_list):
+
+        block_min_x = data[0] - 0.5
+        block_max_x = data[0] + 0.5
+
+        block_max_y = data[1]
+
+        block_min_z = data[2] - 0.5
+        block_max_z = data[2] + 0.5
+
+        if all([
+            block_min_x <= point[0] <= block_max_x,
+            point[1] <= block_max_y,
+            block_min_z <= point[2] <= block_max_z,
+        ]):
+            return True
+
+    return False
+
+
 def make_new_battle(player_one, player_two, cycle_duration):
 
     # Generate map data

@@ -81,6 +81,50 @@ function loadTerrainData()
 }
 
 
+function getVisibleTiles( _coordinates : Vector3 )
+{
+
+	// _coordinates.x += 0.1;
+
+	var url : String = "http://127.0.0.1:8000/get_visible_tiles/?battle_id=3&coordinates=[" + _coordinates.x  + "," + _coordinates.y + "," + _coordinates.z + "]";
+
+	var www : WWW = new WWW (url);
+
+	// Wait for download to complete
+	yield www;
+
+	Debug.Log(www.text);
+
+	var tileDataList = JSON.Parse(www.text);
+
+	// reset block colors
+	SublayerGameDelegate.instance.resetBlockColors();
+
+	// Block data
+	// var tileDataList = jsonObject["terrain_data_list"];
+	for( var t : int = 0; t < tileDataList.Count; t++ )
+	{
+
+		var tileData = tileDataList[t];
+
+		// Coordinates
+		var coordinateArray = tileData;
+		
+		var tileCoordinates : Vector3 = Vector3(
+			coordinateArray[0].AsFloat,
+			coordinateArray[1].AsFloat,
+			coordinateArray[2].AsFloat
+		);
+
+		var block : Tile = SublayerGameDelegate.instance.getBlockAtCoordinates(tileCoordinates);
+
+		block.arrangeVerts(true);
+
+	}
+
+}
+
+
 function loadBattleFrames()
 {
 

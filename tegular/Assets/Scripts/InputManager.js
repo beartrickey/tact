@@ -143,9 +143,10 @@ function handleMouseControls(){
 function handleKeyboardControls(){
 
 	// Example
-	if(Input.GetKey(KeyCode.K))
+	// if(Input.GetKey(KeyCode.K))
+	if(Input.GetKeyDown(KeyCode.K))
 	{
-		
+	
 	}
 
 }

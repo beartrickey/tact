@@ -37,7 +37,7 @@ function onInitialize( _tileCoordinates : Vector3 )
 
 	coordinates = _tileCoordinates;
 
-	arrangeVerts();
+	arrangeVerts(false);
 
 }
 
@@ -47,6 +47,8 @@ function tileClicked( _buttonScript : ButtonScript )
 {
 
 	Debug.Log( "tileClicked" );
+
+	GameManager.instance.netInterface.getVisibleTiles(coordinates);
 
 	// if( movable )
 	// {
@@ -66,8 +68,7 @@ function tileUpdate()
 
 
 
-function arrangeVerts(){
-
+function arrangeVerts( _selected : boolean ){
 	////////////////////////////////////
 	// Vertex Positions
 	////////////////////////////////////
@@ -119,6 +120,10 @@ function arrangeVerts(){
 
 	var topColorValue : float = 0.5 + (coordinates.y * 0.1);
 	var topColor : Color = Color(topColorValue, topColorValue, topColorValue, 1.0);
+	if( _selected == true )
+	{
+		topColor = Color.red;
+	}
 	var sideOneColor : Color = Color(0.5, 0.5, 0.5, 1.0);
 	var sideTwoColor : Color = Color(0.25, 0.25, 0.25, 1.0);
 	var bottomColor : Color = Color(0.0, 0.0, 0.0, 1.0);

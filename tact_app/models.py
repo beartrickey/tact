@@ -75,9 +75,9 @@ class TerrainMap(models.Model):
         for column_number in range(-4, 5):
             for row_number in range(-4, 5):
                 tile_data = [
-                    column_number,
-                    random.randint(1, 3),
-                    row_number,
+                    column_number,          # X
+                    random.randint(1, 3),   # Y
+                    row_number,             # Z
                 ]
                 terrain_data_list.append(tile_data)
 
